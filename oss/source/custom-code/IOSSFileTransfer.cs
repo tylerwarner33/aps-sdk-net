@@ -35,17 +35,15 @@ namespace Autodesk.Oss
             Stream sourceToUpload,
             string accessToken,
             CancellationToken cancellationToken,
-            string projectScope = "",
             string requestIdPrefix = "",
             IProgress<int> progress = null);
     
-        Task Download(
+        Task<Stream> Download(
             string bucketKey,
             string objectKey,
-            string filePath,
             string accessToken,
             CancellationToken cancellationToken,
-            string projectScope = "",
+            string filePath = null,
             string requestIdPrefix = "",
             IProgress<int> progress = null);
     }
