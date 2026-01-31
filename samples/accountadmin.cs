@@ -1,523 +1,559 @@
-using System.Data;
-using System.Reflection.Metadata.Ecma335;
 using Autodesk.Construction.AccountAdmin;
 using Autodesk.Construction.AccountAdmin.Model;
 using Autodesk.SDKManager;
 
-namespace Samples
+namespace Samples;
+
+public class AccountAdmin
 {
-    class Admin
+    private readonly string? _token = Environment.GetEnvironmentVariable("TOKEN");
+    private readonly string? _accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    private readonly string? _userId = Environment.GetEnvironmentVariable("USER_ID");
+    private readonly string? _adminUserId = Environment.GetEnvironmentVariable("ADMIN_USER_ID");
+    private readonly string? _projectId = Environment.GetEnvironmentVariable("PROJECT_ID");
+    private readonly string? _companyId = Environment.GetEnvironmentVariable("COMPANY_ID");
+
+    private AdminClient _adminClient = null!;
+
+    public void Initialize()
     {
-        string token = "your token";
+        if (string.IsNullOrEmpty(_token))
+            throw new InvalidOperationException(
+                $"The access token is required to initialize the {nameof(AdminClient)}.");
 
-        string accountId = "your account id";
-        string userId = "your user id";
-        string adminUserId = "your admin user id";
-        string projectId = "your project id";
-        string companyId = "your company id";
-        AdminClient adminClient = null!;
+        // Optionally initialize SDKManager to pass custom configurations. 
+        SdkManagerBuilder.Create().Build();
 
-        public void Initialise()
+        StaticAuthenticationProvider staticAuthenticationProvider = new(_token);
+        _adminClient = new AdminClient(authenticationProvider: staticAuthenticationProvider);
+    }
+
+    #region Projects
+
+    /// <summary>
+    /// Get projects by account id.
+    /// </summary>
+    public async Task GetProjects()
+    {
+        ProjectsPage projectList = await _adminClient.GetProjectsAsync(accountId: _accountId, region: Region.US);
+        Console.WriteLine(projectList);
+    }
+
+    /// <summary>
+    /// Get project details.
+    /// </summary>
+    public async Task GetProject()
+    {
+        Project project = await _adminClient.GetProjectAsync(projectId: _projectId, fields: [Fields.AccountId, Fields.Name]);
+        Console.WriteLine(project);
+    }
+
+    /// <summary>
+    /// Update project image.
+    /// </summary>
+    public async Task UpdateProjectImage()
+    {
+        string filePath = "C:/Users/gitundh/Downloads/atc.png";
+        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
         {
-            // Optionally initialise SDKManager to pass custom configurations. 
-            // SDKManager sdkManager = SdkManagerBuilder.Create().Build();
-
-            StaticAuthenticationProvider staticAuthenticationProvider = new StaticAuthenticationProvider(token);
-            // Instantiate AdminClient using the auth provider
-            adminClient = new AdminClient(authenticationProvider: staticAuthenticationProvider);
-        }
-
-        // Get projects by account id
-        public async Task getProjects()
-        {
-            ProjectsPage projectList = await adminClient.GetProjectsAsync(accountId: accountId, region: Region.US);
-            Console.WriteLine(projectList);
-        }
-
-
-        // Get project details
-        public async Task getProject()
-        {
-            Project project = await adminClient.GetProjectAsync(projectId: projectId, fields: [Fields.AccountId, Fields.Name]);
-            Console.WriteLine(project);
-        }
-
-        //update project image
-        public async Task updateProjectImage()
-        {
-            var filePath = "C:/Users/gitundh/Downloads/atc.png";
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                ProjectPatch resp = await adminClient.CreateProjectImageAsync(projectId, accountId, fileStream, Region.US);
-                Console.WriteLine(resp);
-            }
-        }
-
-        //Create Project 
-        public async Task createProject()
-        {
-            ProjectPayload projectPayload = new ProjectPayload();
-            projectPayload.Name = "testProjectFour";
-            projectPayload.Type = "Bridge";
-            projectPayload.Classification = Classification.Sample;
-            projectPayload.City = "New York";
-            projectPayload.Country = "United States";
-            projectPayload.Timezone = Timezone.AmericaNewYork;
-            projectPayload.Platform = Platform.Acc;
-            Project project = await adminClient.CreateProjectAsync(accountId, projectPayload: projectPayload);
-            Console.WriteLine(project);
-        }
-
-
-        // Get Companies by account id
-        public async Task getCompanies()
-        {
-            List<Company> companiesList = await adminClient.GetCompaniesAsync(accountId: accountId, region: Region.US);
-            foreach (var company in companiesList)
-            {
-                Console.WriteLine(company.Name);
-                Console.WriteLine(company.Id);
-            }
-        }
-
-
-        // Get Company details
-        public async Task getCompany()
-        {
-            Company company = await adminClient.GetCompanyAsync(companyId: companyId, accountId: accountId);
-            Console.WriteLine(company);
-        }
-
-        // Search Companies
-        public async Task searchCompany()
-        {
-            List<Company> companyList = await adminClient.SearchCompaniesAsync(accountId: accountId);
-            foreach (var company in companyList)
-            {
-                Console.WriteLine(company.Name);
-                Console.WriteLine(company.Id);
-            }
-        }
-
-        // Get Companies by project id
-        public async Task getProjectCompanies()
-        {
-            List<ProjectCompanies> companyList = await adminClient.GetProjectCompaniesAsync(projectId: projectId, accountId: accountId, region: Region.US);
-            foreach (var company in companyList)
-            {
-                Console.WriteLine(company.Name);
-                Console.WriteLine(company.Id);
-            }
-        }
-
-        // Create Company
-        public async Task createCompany()
-        {
-            CompanyPayload companyPayload = new CompanyPayload();
-            companyPayload.Name = "Test Company Five";
-            companyPayload.Trade = Trade.Communications;
-            companyPayload.AddressLine1 = "The Fifth Avenue";
-            companyPayload.City = "New York";
-            companyPayload.WebsiteUrl = "http://www.autodesk.com";
-            companyPayload.Description = "This is a test company";
-            Company company = await adminClient.CreateCompanyAsync(accountId, companyPayload: companyPayload);
-            Console.WriteLine(company);
-        }
-        public async Task getCompaniesWithPagination()
-        {
-            // Example values for demonstration
-            Region region = Region.US;
-            string userId = adminUserId;
-            string filterName = "004";
-            string filterTrade = "Cast-in-Place";
-            string filterErpId = "c79bf096-5a3e-41a4-aaf8-a771ed329047";
-            string filterTaxId = "413-07-5767";
-            string filterUpdatedAt = "2025-05-19T00:00:00.000Z..";
-            List<CompanyOrFilters> orFilters = new List<CompanyOrFilters> { CompanyOrFilters.Name, CompanyOrFilters.Trade };
-            FilterTextMatch filterTextMatch = FilterTextMatch.Equals;
-            List<FilterCompanySort> sort = new List<FilterCompanySort> { FilterCompanySort.Namedesc };
-            List<FilterCompanyFields> fields = new List<FilterCompanyFields> {
-                FilterCompanyFields.Name,
-                FilterCompanyFields.Trade,
-            };
-            int? limit = 1;
-            int? offset = 0;
-
-            CompaniesPage response = await adminClient.GetCompaniesWithPaginationAsync(
-                accountId: accountId,
-                region: region,
-                userId: userId,
-                filterName: filterName,
-                filterTrade: filterTrade,
-                filterErpId: filterErpId,
-                filterTaxId: filterTaxId,
-                filterUpdatedAt: filterUpdatedAt,
-                orFilters: orFilters,
-                filterTextMatch: filterTextMatch,
-                sort: sort,
-                fields: fields,
-                limit: limit,
-                offset: offset
-            );
-
-            // Print pagination info
-            Console.WriteLine($"Limit: {response.Pagination.Limit}");
-            Console.WriteLine($"Offset: {response.Pagination.Offset}");
-
-            // Print company details
-            foreach (var company in response.Results)
-            {
-                Console.WriteLine($"\nCompany: {company.Name}");
-                Console.WriteLine($"ID: {company.Id}");
-                Console.WriteLine($"Trade: {company.Trade}");
-                Console.WriteLine($"TaxId: {company.TaxId}");
-                Console.WriteLine($"ErpId: {company.ErpId}");
-                Console.WriteLine($"UpdatedAt: {company.UpdatedAt}");
-                Console.WriteLine($"Status: {company.Status}");
-            }
-        }
-        // Import Companies
-        public async Task importCompanies()
-        {
-            CompanyPayload companyPayload = new CompanyPayload();
-            companyPayload.Name = "Test Companyy Furth";
-            companyPayload.Trade = Trade.Communications;
-            companyPayload.AddressLine1 = "The Fifth Avenue";
-            companyPayload.City = "New York";
-            companyPayload.WebsiteUrl = "http://www.autodesk.com";
-            companyPayload.Description = "This is a test company";
-
-            List<CompanyPayload> importCompanyPayload = [companyPayload];
-            CompanyImport response = await adminClient.ImportCompaniesAsync(accountId, companyPayload: importCompanyPayload);
-            Console.WriteLine(response);
-        }
-
-        //update company details
-        public async Task updateCompany()
-        {
-            CompanyPatchPayload companyPatchPayload = new()
-            {
-                Trade = Trade.Concrete,
-                City = "New Jersy"
-            };
-            Company response = await adminClient.PatchCompanyDetailsAsync(companyId, accountId, region: Region.US, companyPatchPayload: companyPatchPayload);
-            Console.WriteLine(response);
-        }
-
-        //update Company image
-        public async Task updateCompanyImage()
-        {
-            var filePath = "C:/Users/gitundh/Downloads/atc.png";
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                var resp = await adminClient.PatchCompanyImageAsync(companyId, accountId, fileStream, Region.US);
-                Console.WriteLine(resp);
-            }
-        }
-
-        //list account users
-        public async Task listUsers()
-        {
-            List<User> response = await adminClient.GetUsersAsync(accountId);
-            Console.Write(response[0]);
-        }
-
-        //get account user details
-        public async Task getUser()
-        {
-            User response = await adminClient.GetUserAsync(accountId, adminUserId);
-            Console.WriteLine(response);
-        }
-
-        // Create new User
-        public async Task createUser()
-        {
-            UserPayload userPayload = new UserPayload();
-            userPayload.Name = "Test User Two";
-            userPayload.Email = "abcTwo@autodesk.com";
-            userPayload.AddressLine1 = "The Fifth Avenue";
-            userPayload.City = "New York";
-            userPayload.AboutMe = "This is a test user";
-            User response = await adminClient.CreateUserAsync(accountId, userPayload: userPayload);
-            Console.WriteLine(response);
-        }
-
-        // Import Users
-        public async Task importUsers()
-        {
-            UserPayload userPayload = new UserPayload();
-            userPayload.Name = "Test User";
-            userPayload.Email = "abc@autodesk.com";
-            userPayload.AddressLine1 = "The Fifth Avenue";
-            userPayload.City = "New York";
-            userPayload.AboutMe = "This is a test user";
-
-            List<UserPayload> importUserPayload = [userPayload];
-            UserImport response = await adminClient.ImportUsersAsync(accountId, userPayload: importUserPayload);
-            Console.WriteLine(response);
-        }
-
-        //update user details
-        public async Task updateUser()
-        {
-            UserPatchPayload userPatchPayload = new()
-            {
-                Status = UserPatchStatus.Active
-            };
-            User response = await adminClient.PatchUserDetailsAsync(accountId, userId, region: Region.US, userPatchPayload: userPatchPayload);
-            Console.WriteLine(response);
-        }
-
-        // get Project Users
-        public async Task getProjectUsers()
-        {
-            ProjectUsersPage response = await adminClient.GetProjectUsersAsync(projectId);
-            Console.WriteLine(response);
-        }
-
-        public async Task getUserProjects()
-        {
-            List<string> filterId = new List<string> { "828e49fe-8a96-4eed-bec1-4a617bda6b09" };
-            List<UserProjectFields> fields = new List<UserProjectFields> { UserProjectFields.AddressLine1, UserProjectFields.AddressLine2 };
-            List<Classification> filterClassification = new List<Classification> { Classification.Sample };
-            string filterName = "st";
-            List<Platform> filterPlatform = new List<Platform> { Platform.Acc };
-            List<Status> filterStatus = new List<Status> { Status.Active };
-            List<string> filterType = new List<string> { "Demonstration Project" };
-            string filterJobNumber = "1234567890";
-            string filterUpdatedAt = "2024-01-23T19:46:18.160-04:00"; // not working
-            List<FilterUserProjectsAccessLevels> filterAccessLevels = new List<FilterUserProjectsAccessLevels> { FilterUserProjectsAccessLevels.ProjectAdmin };
-            FilterTextMatch filterTextMatch = FilterTextMatch.EndsWith;
-            List<UserProjectSortBy> sort = new List<UserProjectSortBy> { UserProjectSortBy.Namedesc };
-            int limit = 1;
-            int offset = 2;
-            UserProjectsPage response = await adminClient.GetUserProjectsAsync(accountId, userId);
-
-            Pagination page = response.Pagination;
-            Console.WriteLine(page.Limit);
-
-            foreach (var project in response.Results)
-            {
-                Console.WriteLine(project.Name);
-                Console.WriteLine(project.Id);
-                Console.WriteLine(project.Platform);
-                Console.WriteLine(project.Type);
-                Console.WriteLine(project.JobNumber);
-                Console.WriteLine(project.UpdatedAt);
-                Console.WriteLine(project.Status);
-                Console.WriteLine(project.AccessLevels);
-                Console.WriteLine(project.Timezone);
-            }
-        }
-
-        // Get user products
-        public async Task getUserProducts()
-        {
-            List<string> filterProjectId = new List<string> { "1574261a-4095-400c-8a88-d4aeab1a1fa4" };
-            List<FilterProductKey> filterKey = new List<FilterProductKey> { FilterProductKey.Docs, FilterProductKey.Build };
-            List<FilterProductField> fields = new List<FilterProductField> { FilterProductField.Name, FilterProductField.Icon };
-            List<FilterProductSort> sort = new List<FilterProductSort> { FilterProductSort.Namedesc};
-            int limit = 10;
-            int offset = 5;
-
-            ProductsPage response = await adminClient.GetUserProductsAsync(
-                accountId: accountId,
-                userId: userId,
-                region: Region.US,
-                filterProjectId: filterProjectId,
-                filterKey: filterKey,
-                fields: fields,
-                sort: sort,
-                limit: limit,
-                offset: offset
-            );
-
-            Console.WriteLine($"Total Products: {response.Pagination.TotalResults}");
-            Console.WriteLine($"Limit: {response.Pagination.Limit}");
-            Console.WriteLine($"Offset: {response.Pagination.Offset}");
-
-            foreach (var product in response.Results)
-            {
-                Console.WriteLine($"\nProduct Name: {product.Name}");
-                Console.WriteLine($"Product Key: {product.Key}");
-                if (product.ProjectIds != null)
-                {
-                    Console.WriteLine($"Associated Projects: {string.Join(", ", product.ProjectIds)}");
-                }
-            }
-        }
-
-        // Get user roles
-        public async Task getUserRoles()
-        {
-            List<string> filterProjectId = new List<string> { "6cbd9e21-e4b5-425c-a448-c29fea20ca5e" };
-            List<FilterRoleStatus> filterStatus = new List<FilterRoleStatus> { FilterRoleStatus.Active };
-            string filterName = "Document Manager";
-            FilterTextMatch filterTextMatch = FilterTextMatch.Equals;
-            List<FilterRoleField> fields = new List<FilterRoleField> { 
-                FilterRoleField.Name, 
-                FilterRoleField.Status, 
-                FilterRoleField.ProjectIds 
-            };
-            List<FilterRoleSort> sort = new List<FilterRoleSort> { FilterRoleSort.Namedesc };
-            int limit = 2;
-            int offset = 2;
-
-            RolesPage response = await adminClient.GetUserRolesAsync(
-                accountId: accountId,
-                userId: userId,
-                region: Region.US,
-                filterProjectId: filterProjectId,
-                filterStatus: filterStatus,
-                filterName: filterName,
-                filterTextMatch: filterTextMatch,
-                fields: fields,
-                sort: sort,
-                limit: limit,
-                offset: offset
-            );
-
-            Console.WriteLine($"Total Roles: {response.Pagination.TotalResults}");
-            Console.WriteLine($"Limit: {response.Pagination.Limit}");
-            Console.WriteLine($"Offset: {response.Pagination.Offset}");
-
-            foreach (var role in response.Results)
-            {
-                Console.WriteLine($"\nRole Name: {role.Name}");
-                Console.WriteLine($"Role Status: {role.Status}");
-                Console.WriteLine($"Role Key: {role.Key}");
-                if (role.ProjectIds != null)
-                {
-                    Console.WriteLine($"Associated Projects: {string.Join(", ", role.ProjectIds)}");
-                }
-                Console.WriteLine($"Created At: {role.CreatedAt}");
-                Console.WriteLine($"Updated At: {role.UpdatedAt}");
-            }
-        }
-
-        // fetch specified user in the project
-        public async Task getProjectUser()
-        {
-            ProjectUser response = await adminClient.GetProjectUserAsync(projectId, userId: adminUserId);
-            Console.WriteLine(response);
-        }
-
-        //assign user to project
-        public async Task assignProjectUser()
-        {
-            ProjectUserPayload projectUserPayload = new()
-            {
-                Email = "xyz@autodesk.com",
-                Products = [
-                    new ProjectUserPayloadProducts(){
-                        Key = ProductKeys.Build,
-                        Access = ProductAccess.Member
-                    }
-                ]
-            };
-            ProjectUserDetails response = await adminClient.AssignProjectUserAsync(projectId, projectUserPayload: projectUserPayload);
-            Console.WriteLine(response);
-        }
-
-        // import users to the specified project
-        public async Task importProjectUsers()
-        {
-            ProjectUsersImportPayload projectUsersImportPayload = new()
-            {
-                Users = [
-                    new ProjectUsersImportPayloadUsers(){
-                        Email = "harry.potter@hmail.com",
-                        Products = [
-                            new ProjectUsersImportPayloadUsersProducts(){
-                                Key = ProductKeys.ProjectAdministration,
-                                Access = ProductAccess.Administrator
-                            }
-                        ]
-                    }
-                ]
-            };
-            ProjectUsersImport response = await adminClient.ImportProjectUsersAsync(projectId, projectUsersImportPayload: projectUsersImportPayload);
-            Console.WriteLine(response);
-        }
-
-        // Update specified user's details in a project
-        public async Task updateProjectUser()
-        {
-            ProjectUsersUpdatePayload projectUsersUpdatePayload = new()
-            {
-                RoleIds = [
-                    "8da864e0-8a8c-424f-8a90-338cc6ea09d7",
-                    "d52d31ee-00f2-43cd-ae11-32aba34490df"
-                ]
-            };
-            ProjectUserDetails response = await adminClient.UpdateProjectUserAsync(projectId, adminUserId, projectUsersUpdatePayload: projectUsersUpdatePayload);
-            Console.WriteLine(response);
-        }
-
-        // Remove the specified user from a project
-        public async Task deleteProjectUser()
-        {
-            var response = await adminClient.RemoveProjectUserAsync(projectId, userId);
-        }
-
-        // fetch all the business units in a specific account
-        public async Task getBusinessUnits()
-        {
-            BusinessUnits response = await adminClient.GetBusinessUnitsAsync(accountId);
-            Console.Write(response);
-        }
-
-        // Create business units of a specific account
-        public async Task putBusinessUnits()
-        {
-            BusinessUnitsPayload businessUnitsPayload = new()
-            {
-                BusinessUnits = [
-                    new(){
-                        Name =  "test unit two",
-                        Description = "testing business_units API"
-                    }
-                ]
-            };
-            BusinessUnits response = await adminClient.CreateBusinessUnitsAsync(accountId, businessUnitsPayload: businessUnitsPayload);
-            Console.WriteLine(response);
-        }
-
-        public static async Task Main()
-        {
-            Admin admin = new Admin();
-            // Initialise SDKManager & AdminClient
-            admin.Initialise();
-            // Call respective methods
-            // await admin.getProjects();
-            // await admin.getProject();
-            // await admin.updateProjectImage();
-            // await admin.createProject();
-            // await admin.getCompanies();
-            // await admin.getCompany();
-            // await admin.searchCompany();
-            // await admin.getProjectCompanies();
-            // await admin.createCompany();
-            // await admin.getCompaniesWithPagination();
-            // await admin.importCompanies();
-            // await admin.updateCompany();
-            // await admin.updateCompanyImage();
-            // await admin.listUsers();
-            // await admin.getUser();
-            // await admin.createUser();
-            // await admin.importUsers();
-            // await admin.updateUser();
-            await admin.getUserProducts();
-            // await admin.getUserRoles();
-            // await admin.getProjectUsers();
-            // await admin.getUserProjects();
-            // await admin.getProjectUser();
-            // await admin.assignProjectUser();
-            // await admin.importProjectUsers();
-            // await admin.updateProjectUser();
-            // await admin.deleteProjectUser();
-            // await admin.getBusinessUnits();
-            // await admin.putBusinessUnits();
+            ProjectPatch resp = await _adminClient.CreateProjectImageAsync(_projectId, _accountId, fileStream, Region.US);
+            Console.WriteLine(resp);
         }
     }
+
+    /// <summary>
+    /// Create project.
+    /// </summary>
+    public async Task CreateProject()
+    {
+        ProjectPayload projectPayload = new ProjectPayload();
+        projectPayload.Name = "testProjectFour";
+        projectPayload.Type = "Bridge";
+        projectPayload.Classification = Classification.Sample;
+        projectPayload.City = "New York";
+        projectPayload.Country = "United States";
+        projectPayload.Timezone = Timezone.AmericaNewYork;
+        projectPayload.Platform = Platform.Acc;
+        Project project = await _adminClient.CreateProjectAsync(_accountId, projectPayload: projectPayload);
+        Console.WriteLine(project);
+    }
+
+    #endregion
+
+    #region Companies
+
+    /// <summary>
+    /// Get companies by account id.
+    /// </summary>
+    public async Task GetCompanies()
+    {
+        List<Company> companies = await _adminClient.GetCompaniesAsync(accountId: _accountId, region: Region.US);
+        foreach (var company in companies)
+        {
+            Console.WriteLine(company.Name);
+            Console.WriteLine(company.Id);
+        }
+    }
+
+    /// <summary>
+    /// Get company details.
+    /// </summary>
+    public async Task GetCompany()
+    {
+        Company company = await _adminClient.GetCompanyAsync(companyId: _companyId, accountId: _accountId);
+        Console.WriteLine(company);
+    }
+
+    /// <summary>
+    /// Search companies.
+    /// </summary>
+    public async Task SearchCompany()
+    {
+        List<Company> companies = await _adminClient.SearchCompaniesAsync(accountId: _accountId);
+        foreach (var company in companies)
+        {
+            Console.WriteLine(company.Name);
+            Console.WriteLine(company.Id);
+        }
+    }
+
+    /// <summary>
+    /// Get companies by project id.
+    /// </summary>
+    public async Task GetProjectCompanies()
+    {
+        List<ProjectCompanies> companies = await _adminClient.GetProjectCompaniesAsync(projectId: _projectId, accountId: _accountId, region: Region.US);
+        foreach (var company in companies)
+        {
+            Console.WriteLine(company.Name);
+            Console.WriteLine(company.Id);
+        }
+    }
+
+    /// <summary>
+    /// Create company.
+    /// </summary>
+    public async Task CreateCompany()
+    {
+        CompanyPayload companyPayload = new()
+        {
+            Name = "Test Company Five",
+            Trade = Trade.Communications,
+            AddressLine1 = "The Fifth Avenue",
+            City = "New York",
+            WebsiteUrl = "http://www.autodesk.com",
+            Description = "This is a test company"
+        };
+        Company company = await _adminClient.CreateCompanyAsync(_accountId, companyPayload: companyPayload);
+        Console.WriteLine(company);
+    }
+
+    public async Task GetCompaniesWithPagination()
+    {
+        Region region = Region.US;
+        string userId = _adminUserId;
+        string filterName = "004";
+        string filterTrade = "Cast-in-Place";
+        string filterErpId = "c79bf096-5a3e-41a4-aaf8-a771ed329047";
+        string filterTaxId = "413-07-5767";
+        string filterUpdatedAt = "2025-05-19T00:00:00.000Z..";
+        List<CompanyOrFilters> orFilters = [CompanyOrFilters.Name, CompanyOrFilters.Trade];
+        FilterTextMatch filterTextMatch = FilterTextMatch.Equals;
+        List<FilterCompanySort> sort = [FilterCompanySort.Namedesc];
+        List<FilterCompanyFields> fields = [FilterCompanyFields.Name, FilterCompanyFields.Trade,];
+        int? limit = 1;
+        int? offset = 0;
+
+        CompaniesPage response = await _adminClient.GetCompaniesWithPaginationAsync(
+            accountId: _accountId,
+            region: region,
+            userId: userId,
+            filterName: filterName,
+            filterTrade: filterTrade,
+            filterErpId: filterErpId,
+            filterTaxId: filterTaxId,
+            filterUpdatedAt: filterUpdatedAt,
+            orFilters: orFilters,
+            filterTextMatch: filterTextMatch,
+            sort: sort,
+            fields: fields,
+            limit: limit,
+            offset: offset
+        );
+
+        Console.WriteLine($"Limit: {response.Pagination.Limit}");
+        Console.WriteLine($"Offset: {response.Pagination.Offset}");
+
+        foreach (var company in response.Results)
+        {
+            Console.WriteLine($"\nCompany: {company.Name}");
+            Console.WriteLine($"ID: {company.Id}");
+            Console.WriteLine($"Trade: {company.Trade}");
+            Console.WriteLine($"TaxId: {company.TaxId}");
+            Console.WriteLine($"ErpId: {company.ErpId}");
+            Console.WriteLine($"UpdatedAt: {company.UpdatedAt}");
+            Console.WriteLine($"Status: {company.Status}");
+        }
+    }
+
+    /// <summary>
+    /// Import companies.
+    /// </summary>
+    public async Task ImportCompanies()
+    {
+        CompanyPayload companyPayload = new();
+        companyPayload.Name = "Test Companyy Furth";
+        companyPayload.Trade = Trade.Communications;
+        companyPayload.AddressLine1 = "The Fifth Avenue";
+        companyPayload.City = "New York";
+        companyPayload.WebsiteUrl = "http://www.autodesk.com";
+        companyPayload.Description = "This is a test company";
+
+        List<CompanyPayload> importCompanyPayload = [companyPayload];
+        CompanyImport response = await _adminClient.ImportCompaniesAsync(_accountId, companyPayload: importCompanyPayload);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Update company details.
+    /// </summary>
+    public async Task UpdateCompany()
+    {
+        CompanyPatchPayload companyPatchPayload = new()
+        {
+            Trade = Trade.Concrete,
+            City = "New Jersey"
+        };
+        Company response = await _adminClient.PatchCompanyDetailsAsync(_companyId, _accountId, region: Region.US, companyPatchPayload: companyPatchPayload);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Update company image.
+    /// </summary>
+    public async Task UpdateCompanyImage()
+    {
+        string filePath = "C:/Users/gitundh/Downloads/atc.png";
+        using (FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read))
+        {
+            var resp = await _adminClient.PatchCompanyImageAsync(_companyId, _accountId, fileStream, Region.US);
+            Console.WriteLine(resp);
+        }
+    }
+
+    #endregion
+
+    #region Users
+
+    /// <summary>
+    /// List account users.
+    /// </summary>
+    public async Task GetUsers()
+    {
+        List<User> response = await _adminClient.GetUsersAsync(_accountId);
+        Console.Write(response[0]);
+    }
+
+    /// <summary>
+    /// Get account user details.
+    /// </summary>
+    public async Task GetUser()
+    {
+        User response = await _adminClient.GetUserAsync(_accountId, _adminUserId);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Create new user.
+    /// </summary>
+    public async Task CreateUser()
+    {
+        UserPayload userPayload = new()
+        {
+            Name = "Test User Two",
+            Email = "abcTwo@autodesk.com",
+            AddressLine1 = "The Fifth Avenue",
+            City = "New York",
+            AboutMe = "This is a test user"
+        };
+        User response = await _adminClient.CreateUserAsync(_accountId, userPayload: userPayload);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Import users.
+    /// </summary>
+    public async Task ImportUsers()
+    {
+        UserPayload userPayload = new()
+        {
+            Name = "Test User",
+            Email = "abc@autodesk.com",
+            AddressLine1 = "The Fifth Avenue",
+            City = "New York",
+            AboutMe = "This is a test user"
+        };
+        List<UserPayload> importUserPayload = [userPayload];
+        UserImport response = await _adminClient.ImportUsersAsync(_accountId, userPayload: importUserPayload);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Update user details.
+    /// </summary>
+    public async Task UpdateUser()
+    {
+        UserPatchPayload userPatchPayload = new()
+        {
+            Status = UserPatchStatus.Active
+        };
+        User response = await _adminClient.PatchUserDetailsAsync(_accountId, _userId, region: Region.US, userPatchPayload: userPatchPayload);
+        Console.WriteLine(response);
+    }
+
+    #endregion
+
+    #region Account Users
+
+    public async Task GetUserProjects()
+    {
+        List<string> filterId = ["828e49fe-8a96-4eed-bec1-4a617bda6b09"];
+        List<UserProjectFields> fields = [UserProjectFields.AddressLine1, UserProjectFields.AddressLine2];
+        List<Classification> filterClassification = [Classification.Sample];
+        string filterName = "st";
+        List<Platform> filterPlatform = [Platform.Acc];
+        List<Status> filterStatus = [Status.Active];
+        List<string> filterType = ["Demonstration Project"];
+        string filterJobNumber = "1234567890";
+        string filterUpdatedAt = "2024-01-23T19:46:18.160-04:00"; // not working
+        List<FilterUserProjectsAccessLevels> filterAccessLevels = [FilterUserProjectsAccessLevels.ProjectAdmin];
+        FilterTextMatch filterTextMatch = FilterTextMatch.EndsWith;
+        List<UserProjectSortBy> sort = [UserProjectSortBy.Namedesc];
+        int limit = 1;
+        int offset = 2;
+        UserProjectsPage response = await _adminClient.GetUserProjectsAsync(_accountId, _userId);
+
+        Pagination page = response.Pagination;
+        Console.WriteLine(page.Limit);
+
+        foreach (var project in response.Results)
+        {
+            Console.WriteLine(project.Name);
+            Console.WriteLine(project.Id);
+            Console.WriteLine(project.Platform);
+            Console.WriteLine(project.Type);
+            Console.WriteLine(project.JobNumber);
+            Console.WriteLine(project.UpdatedAt);
+            Console.WriteLine(project.Status);
+            Console.WriteLine(project.AccessLevels);
+            Console.WriteLine(project.Timezone);
+        }
+    }
+
+    /// <summary>
+    /// Get user products.
+    /// </summary>
+    public async Task getUserProducts()
+    {
+        List<string> filterProjectId = ["1574261a-4095-400c-8a88-d4aeab1a1fa4"];
+        List<FilterProductKey> filterKey = [FilterProductKey.Docs, FilterProductKey.Build];
+        List<FilterProductField> fields = [FilterProductField.Name, FilterProductField.Icon];
+        List<FilterProductSort> sort = [FilterProductSort.Namedesc];
+        int limit = 10;
+        int offset = 5;
+
+        ProductsPage response = await _adminClient.GetUserProductsAsync(
+            accountId: _accountId,
+            userId: _userId,
+            region: Region.US,
+            filterProjectId: filterProjectId,
+            filterKey: filterKey,
+            fields: fields,
+            sort: sort,
+            limit: limit,
+            offset: offset
+        );
+
+        Console.WriteLine($"Total Products: {response.Pagination.TotalResults}");
+        Console.WriteLine($"Limit: {response.Pagination.Limit}");
+        Console.WriteLine($"Offset: {response.Pagination.Offset}");
+
+        foreach (var product in response.Results)
+        {
+            Console.WriteLine($"\nProduct Name: {product.Name}");
+            Console.WriteLine($"Product Key: {product.Key}");
+            if (product.ProjectIds != null)
+            {
+                Console.WriteLine($"Associated Projects: {string.Join(", ", product.ProjectIds)}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Get user roles.
+    /// </summary>
+    public async Task GetUserRoles()
+    {
+        List<string> filterProjectId = ["6cbd9e21-e4b5-425c-a448-c29fea20ca5e"];
+        List<FilterRoleStatus> filterStatus = [FilterRoleStatus.Active];
+        string filterName = "Document Manager";
+        FilterTextMatch filterTextMatch = FilterTextMatch.Equals;
+        List<FilterRoleField> fields = [FilterRoleField.Name, FilterRoleField.Status, FilterRoleField.ProjectIds];
+        List<FilterRoleSort> sort = [FilterRoleSort.Namedesc];
+        int limit = 2;
+        int offset = 2;
+
+        RolesPage response = await _adminClient.GetUserRolesAsync(
+            accountId: _accountId,
+            userId: _userId,
+            region: Region.US,
+            filterProjectId: filterProjectId,
+            filterStatus: filterStatus,
+            filterName: filterName,
+            filterTextMatch: filterTextMatch,
+            fields: fields,
+            sort: sort,
+            limit: limit,
+            offset: offset
+        );
+
+        Console.WriteLine($"Total Roles: {response.Pagination.TotalResults}");
+        Console.WriteLine($"Limit: {response.Pagination.Limit}");
+        Console.WriteLine($"Offset: {response.Pagination.Offset}");
+
+        foreach (var role in response.Results)
+        {
+            Console.WriteLine($"\nRole Name: {role.Name}");
+            Console.WriteLine($"Role Status: {role.Status}");
+            Console.WriteLine($"Role Key: {role.Key}");
+            if (role.ProjectIds != null)
+            {
+                Console.WriteLine($"Associated Projects: {string.Join(", ", role.ProjectIds)}");
+            }
+            Console.WriteLine($"Created At: {role.CreatedAt}");
+            Console.WriteLine($"Updated At: {role.UpdatedAt}");
+        }
+    }
+
+    #endregion
+
+    #region Project Users
+
+    /// <summary>
+    /// Get project users.
+    /// </summary>
+    public async Task GetProjectUsers()
+    {
+        ProjectUsersPage response = await _adminClient.GetProjectUsersAsync(_projectId);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Fetch specified user in the project.
+    /// </summary>
+    public async Task GetProjectUser()
+    {
+        ProjectUser response = await _adminClient.GetProjectUserAsync(_projectId, userId: _adminUserId);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Assign user to project.
+    /// </summary>
+    public async Task AssignProjectUser()
+    {
+        ProjectUserPayload projectUserPayload = new()
+        {
+            Email = "xyz@autodesk.com",
+            Products = new List<ProjectUserPayloadProducts>(){
+                new ProjectUserPayloadProducts(){
+                    Key = ProductKeys.Build,
+                    Access = ProductAccess.Member
+                }
+            }
+        };
+        ProjectUserDetails response = await _adminClient.AssignProjectUserAsync(_projectId, projectUserPayload: projectUserPayload);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Import users to the specified project.
+    /// </summary>
+    public async Task ImportProjectUsers()
+    {
+        ProjectUsersImportPayload projectUsersImportPayload = new()
+        {
+            Users = new List<ProjectUsersImportPayloadUsers>(){
+                new ProjectUsersImportPayloadUsers() {
+                    Email = "harry.potter@hmail.com",
+                    Products = new List<ProjectUsersImportPayloadUsersProducts>(){
+                        new ProjectUsersImportPayloadUsersProducts(){
+                            Key = ProductKeys.ProjectAdministration,
+                            Access = ProductAccess.Administrator
+                        }
+                    }
+                }
+            }
+        };
+        ProjectUsersImport response = await _adminClient.ImportProjectUsersAsync(_projectId, projectUsersImportPayload: projectUsersImportPayload);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Update specified user's details in a project.
+    /// </summary>
+    public async Task UpdateProjectUser()
+    {
+        ProjectUsersUpdatePayload projectUsersUpdatePayload = new()
+        {
+            RoleIds = new List<string>(){
+                "8da864e0-8a8c-424f-8a90-338cc6ea09d7",
+                "d52d31ee-00f2-43cd-ae11-32aba34490df"
+            }
+        };
+        ProjectUserDetails response = await _adminClient.UpdateProjectUserAsync(_projectId, _adminUserId, projectUsersUpdatePayload: projectUsersUpdatePayload);
+        Console.WriteLine(response);
+    }
+
+    /// <summary>
+    /// Remove the specified user from a project.
+    /// </summary>
+    public async Task DeleteProjectUser()
+    {
+        var response = await _adminClient.RemoveProjectUserAsync(_projectId, _userId);
+    }
+
+    #endregion
+
+    #region Business Units
+
+    /// <summary>
+    /// Fetch all the business units in a specific account.
+    /// </summary>
+    public async Task GetBusinessUnits()
+    {
+        BusinessUnits response = await _adminClient.GetBusinessUnitsAsync(_accountId);
+        Console.Write(response);
+    }
+
+    /// <summary>
+    /// Create business units of a specific account.
+    /// </summary>
+    public async Task PutBusinessUnits()
+    {
+        BusinessUnitsPayload businessUnitsPayload = new()
+        {
+            BusinessUnits = new List<BusinessUnitsObject>(){
+                new(){
+                    Name =  "test unit two",
+                    Description = "testing business_units API"
+                }
+            }
+        };
+        BusinessUnits response = await _adminClient.CreateBusinessUnitsAsync(_accountId, businessUnitsPayload: businessUnitsPayload);
+        Console.WriteLine(response);
+    }
+
+    #endregion
+
 }

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Autodesk.ModelDerivative" />
+    <PackageReference Include="Autodesk.Webhooks" />
+    <PackageReference Include="Autodesk.DataManagement" />
+    <PackageReference Include="Autodesk.Oss" />
+    <PackageReference Include="Autodesk.Authentication" />
+    <PackageReference Include="Autodesk.Construction.Issues" />
+    <PackageReference Include="Autodesk.Construction.AccountAdmin" />
+    <PackageReference Include="DotNetEnv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include=".env" Condition="Exists('.env')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

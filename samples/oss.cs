@@ -2,178 +2,193 @@ using Autodesk.Oss;
 using Autodesk.Oss.Model;
 using Autodesk.SDKManager;
 
-namespace Samples
+namespace Samples;
+
+public class Oss
 {
-      class OSS
-      {
-            string token = "<token>";
-            string bucketKey = "<bucket key>";
-            string objectKey = "<object key>";
-            string sourceToUpload = "<path to source file>";//sourceToUpload can also be a stream object
-            string filePath ="<path to source file>";
+    private readonly string? _token = Environment.GetEnvironmentVariable("TOKEN");
+    private readonly string? _bucketKey = Environment.GetEnvironmentVariable("BUCKET_KEY");
+    private readonly string? _objectKey = Environment.GetEnvironmentVariable("OBJECT_KEY");
+    private readonly string? _sourceToUpload = Environment.GetEnvironmentVariable("SOURCE_TO_UPLOAD");//sourceToUpload can also be a stream object
+    private readonly string? _filePath = Environment.GetEnvironmentVariable("FILE_PATH");
+    private readonly string? _hash = Environment.GetEnvironmentVariable("HASH");
+    private readonly string? _newObjName = Environment.GetEnvironmentVariable("NEW_OBJ_NAME");
 
-            string hash ="<hash>";
-            string newObjName ="<newObjName>";
+    private OssClient _ossClient = null!;
 
-            OssClient ossClient = null!;
+    public void Initialize()
+    {
+        if (string.IsNullOrEmpty(_token))
+            throw new InvalidOperationException(
+                $"The access token is required to initialize the {nameof(OssClient)}.");
 
-        public void Initialise()
+        // Optionally initialize SDKManager to pass custom configurations, logger, etc. 
+        SdkManagerBuilder.Create().Build();
+
+        // Instantiate OssClient using the auth provider
+        StaticAuthenticationProvider staticAuthenticationProvider = new(_token);
+        _ossClient = new OssClient(authenticationProvider: staticAuthenticationProvider);
+    }
+
+    #region Buckets
+
+    public async Task CreateBucketAsync()
+    {
+        Bucket response = await _ossClient.CreateBucketAsync(Region.US, new()
+        {
+            BucketKey = _bucketKey,
+            PolicyKey = PolicyKey.Temporary
+        });
+        Console.WriteLine(response);
+    }
+
+    public async Task DeleteBucketAsync()
+    {
+        var response = await _ossClient.DeleteBucketAsync(_bucketKey);
+
+        Console.WriteLine(response);
+    }
+
+    public async Task GetBucketsAsync()
+    {
+        Buckets response = await _ossClient.GetBucketsAsync();
+        Console.WriteLine(response);
+    }
+
+    public async Task GetBucketDetailsAsync()
+    {
+        Bucket bucket = await _ossClient.GetBucketDetailsAsync(_bucketKey);
+        string bucketkey = bucket.BucketKey;
+        string bucketOwner = bucket.BucketOwner;
+        Console.WriteLine(bucket);
+    }
+
+    #endregion
+
+    #region Objects
+
+    public async Task BatchSignedS3UploadAsync()
+    {
+        var uploadObject = new Batchsigneds3uploadObject
+        {
+            Requests = new List<Batchsigneds3uploadObjectRequests>
             {
-                  // Optionally initialise SDKManager to pass custom configurations, logger, etc. 
-                  // SDKManager sdkManager = SdkManagerBuilder.Create().Build();
-            
-                  // Instantiate OssClient using the auth provider
-                  StaticAuthenticationProvider staticAuthenticationProvider = new StaticAuthenticationProvider(token);
-                  ossClient = new OssClient(authenticationProvider:staticAuthenticationProvider);
+                new Batchsigneds3uploadObjectRequests
+                {
+                    ObjectKey = _objectKey,
+                    FirstPart = 1,
+                    Parts = 5,
+                    UploadKey = "" // Start a new upload
+                }
             }
+        };
 
+        Batchsigneds3uploadResponse response = await _ossClient.BatchSignedS3UploadAsync(_bucketKey, uploadObject);
+        Console.WriteLine(response);
+    }
 
-            public async Task GetBucketDetailsAsync()
+    public async Task CopyToAsync()
+    {
+        ObjectDetails response = await _ossClient.CopyToAsync(_bucketKey, _objectKey, _newObjName);
+        Console.WriteLine(response);
+    }
+
+    public async Task DeleteObjectAsync()
+    {
+        var response = await _ossClient.DeleteObjectAsync(_bucketKey, _objectKey);
+        Console.WriteLine(response);
+    }
+
+    public async Task DownloadObjectAsync()
+    {
+        //The below helper method takes care of the complete Download process, i.e.
+        await _ossClient.DownloadObjectAsync(_bucketKey, _objectKey, _filePath);
+
+        //we can also download the file as stream of files.
+        Stream fileStream = await _ossClient.DownloadObjectAsync(_bucketKey, _objectKey);
+    }
+
+    public async Task GetObjectDetailsAsync()
+    {
+        ObjectFullDetails objectFullDetails =
+            await _ossClient.GetObjectDetailsAsync(
+                _bucketKey,
+                _objectKey,
+                with: With.UserDefinedMetadata);
+    }
+
+    public async Task GetObjectsAsync()
+    {
+        BucketObjects response = await _ossClient.GetObjectsAsync(_bucketKey);
+        Console.WriteLine(response);
+    }
+
+    public async Task SignedS3DownloadAsync()
+    {
+        Signeds3downloadResponse response = await _ossClient.SignedS3DownloadAsync(_bucketKey, _objectKey);
+        Console.WriteLine(response);
+    }
+
+    public async Task UploadObjectAsync()
+    {
+        string xAdsMetaContentType = "application/json";
+        string xAdsUserDefinedMetadata =
+            System.Text.Json.JsonSerializer.Serialize(new
             {
-                  Bucket bucket = await ossClient.GetBucketDetailsAsync( bucketKey);
-                  // query for required properties
-                  string bucketkey = bucket.BucketKey;
-                  string bucketOwner = bucket.BucketOwner;
-                  Console.Write(bucket);
-            }
+                id = "123ABC",
+                name = "Test Example",
+                building = new
+                {
+                    level = new
+                    {
+                        id = 1,
+                        height = 10
+                    }
+                }
+            });
 
+    //The below helper method takes care of the complete upload process, i.e. 
+    // the steps 2 to 4 in this link (https://aps.autodesk.com/en/docs/data/v2/tutorials/app-managed-bucket/)
+        ObjectDetails objectDetails = await _ossClient.UploadObjectAsync(
+            _bucketKey,
+            _objectKey,
+            _sourceToUpload,
+            xAdsMetaContentType: xAdsMetaContentType,
+            xAdsUserDefinedMetadata: xAdsUserDefinedMetadata);
 
-            public async Task UploadObjectAsync ()
-            {
-                  //The below helper method takes care of the complete upload process, i.e. 
-                  // the steps 2 to 4 in this link (https://aps.autodesk.com/en/docs/data/v2/tutorials/app-managed-bucket/)
+        //sourceToUpload can be either file path or stream of the object 
+        // query for required properties
+        string objectId = objectDetails.ObjectId;
+        string objectkey = objectDetails.ObjectKey;
+        Console.WriteLine(objectDetails);
+    }
 
-                  //sourceToUpload can be either file path or stream of the object 
-                  ObjectDetails objectDetails = await ossClient.UploadObjectAsync(bucketKey, objectKey, sourceToUpload);
-                  // query for required properties
-                  string objectId = objectDetails.ObjectId;
-                  string objectkey = objectDetails.ObjectKey;
-                  Console.Write(objectDetails);
+    #endregion
 
-            }
-            public async Task DownloadObjectAsync ()
-            {
-                  //The below helper method takes care of the complete Download process, i.e.
+    #region Signed Resources
 
-                  await ossClient.DownloadObjectAsync(bucketKey, objectKey, filePath);
-                  
-                  //we can also download the file as stream of files .
-                  Stream fileStream= await ossClient.DownloadObjectAsync(bucketKey, objectKey);
-            }
+    public async Task CreateSignedResourceAsync()
+    {
+        CreateObjectSigned response = await _ossClient.CreateSignedResourceAsync(_bucketKey, _objectKey, new()
+        {
+            MinutesExpiration = 3,
+            SingleUse = true
+        });
+        Console.WriteLine(response);
+    }
 
-            public async Task GetBucketsAsync() {
+    public async Task DeleteSignedResourceAsync()
+    {
+        var response = await _ossClient.DeleteSignedResourceAsync(_hash);
+        Console.WriteLine(response);
+    }
 
-                  Buckets response = await ossClient.GetBucketsAsync();
-                  Console.Write(response);
-            }
-            public async Task BatchSignedS3UploadAsync() { 
+    public async Task GetSignedResourceAsync()
+    {
+        Stream response = await _ossClient.GetSignedResourceAsync(_hash);
+        Console.WriteLine(response);
+    }
 
-                  var uploadObject = new Batchsigneds3uploadObject
-                  {
-                        Requests = new List<Batchsigneds3uploadObjectRequests>
-                        {
-                              new Batchsigneds3uploadObjectRequests
-                              {
-                              ObjectKey = objectKey,
-                              FirstPart = 1,
-                              Parts = 5,
-                              UploadKey = "" // Start a new upload
-                              }
-                        }
-                  };
-            
-                  Batchsigneds3uploadResponse response = await ossClient.BatchSignedS3UploadAsync(bucketKey,uploadObject);
-                  Console.Write(response);
+    #endregion
 
-            }
-
-            public async Task CopyToAsync() {
-
-                  ObjectDetails response = await ossClient.CopyToAsync(bucketKey, objectKey, newObjName);
-                  Console.Write(response);
-            }
-
-            public async Task CreateBucketAsync() {
-            
-                  Bucket response = await ossClient.CreateBucketAsync(Region.US , new (){
-                              BucketKey=bucketKey,
-                              PolicyKey=PolicyKey.Temporary});
-                  Console.Write(response);
-            }
-
-            public async Task CreateSignedResourceAsync() {
-                  
-                  CreateObjectSigned response = await ossClient.CreateSignedResourceAsync(bucketKey, objectKey, new(){
-
-                  MinutesExpiration=3,
-                  SingleUse=true                  
-                        
-                  });
-                  Console.Write(response);
-            }
-
-            public async Task DeleteBucketAsync() {
-                  
-                  var response = await ossClient.DeleteBucketAsync(bucketKey);
-                  Console.Write(response);
-            }
-            
-            public async Task DeleteObjectAsync() {
-                  
-                  var response = await ossClient.DeleteObjectAsync(bucketKey,objectKey);
-                  Console.Write(response);
-            }
-            
-            public async Task DeleteSignedResourceAsync() {
-                  
-                  var response = await ossClient.DeleteSignedResourceAsync( hash);
-                  Console.Write(response);
-            }
-
-            async Task GetObjectDetailsAsync() {
-                  
-                  ObjectFullDetails response = await ossClient.GetObjectDetailsAsync(bucketKey,objectKey);
-                  Console.Write(response);
-            }
-
-            async Task GetObjectsAsync() {
-                  
-                  BucketObjects response = await ossClient.GetObjectsAsync(bucketKey);
-                  Console.Write(response);
-            }
-
-            async Task GetSignedResourceAsync() {
-                  
-                  Stream response = await ossClient.GetSignedResourceAsync( hash);
-                  Console.Write(response);
-            }
-
-            async Task SignedS3DownloadAsync() {
-                  
-                  Signeds3downloadResponse response = await ossClient.SignedS3DownloadAsync( bucketKey, objectKey);
-                  Console.Write(response);
-            }
-
-            public async void Main()
-            {
-
-                  // Initialise SDKManager & OSSClient
-                  Initialise();
-                  // Call respective methods
-                  await GetBucketDetailsAsync();
-                  await UploadObjectAsync();
-                  await DownloadObjectAsync ();
-                  await GetBucketsAsync();
-                  await CopyToAsync();
-                  await BatchSignedS3UploadAsync();
-                  await CreateBucketAsync();
-                  await CreateSignedResourceAsync();
-                  await DeleteBucketAsync();
-                  await DeleteObjectAsync();
-                  await GetObjectDetailsAsync();
-                  await GetObjectsAsync();
-                  await GetSignedResourceAsync();
-                  await SignedS3DownloadAsync();
-            }
-      }
 }

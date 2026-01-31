@@ -1,40 +1,43 @@
 using Autodesk.DataManagement;
-using Autodesk.DataManagement.Http;
 using Autodesk.DataManagement.Model;
 using Autodesk.SDKManager;
 using Newtonsoft.Json;
 
-class DataManagement
+namespace Samples;
+
+public class DataManagement
 {
-    string? token = Environment.GetEnvironmentVariable("token");
-    string? folder_id = Environment.GetEnvironmentVariable("folder_id");
-    string? project_top_folder_one_id = Environment.GetEnvironmentVariable("project_top_folder_one_id");
-    string? project_top_folder_two_id = Environment.GetEnvironmentVariable("project_top_folder_two_id");
-    string? hub_id = Environment.GetEnvironmentVariable("hub_id");
-    string? project_id = Environment.GetEnvironmentVariable("project_id");
-    string? download_id = Environment.GetEnvironmentVariable("download_id");
-    string? job_id = Environment.GetEnvironmentVariable("job_id");
-    string? item_id = Environment.GetEnvironmentVariable("item_id");
-    string? version_id = Environment.GetEnvironmentVariable("version_id");
-    string? storage_urn = Environment.GetEnvironmentVariable("storage_urn");
+    private readonly string? _token = Environment.GetEnvironmentVariable("TOKEN");
+    private readonly string? _folderId = Environment.GetEnvironmentVariable("FOLDER_ID");
+    private readonly string? _hubId = Environment.GetEnvironmentVariable("HUB_ID");
+    private readonly string? _projectId = Environment.GetEnvironmentVariable("PROJECT_ID");
+    private readonly string? _downloadId = Environment.GetEnvironmentVariable("DOWNLOAD_ID");
+    private readonly string? _jobId = Environment.GetEnvironmentVariable("JOB_ID");
+    private readonly string? _itemId = Environment.GetEnvironmentVariable("ITEM_ID");
+    private readonly string? _versionId = Environment.GetEnvironmentVariable("VERSION_ID");
+    private readonly string? _storageUrn = Environment.GetEnvironmentVariable("STORAGE_URN");
 
-    DataManagementClient dataManagementClient = null!;
+    private DataManagementClient _dataManagementClient = null!;
 
-    public void Initialise()
+    public void Initialize()
     {
-        StaticAuthenticationProvider staticAuthenticationProvider = new StaticAuthenticationProvider(token);
-        dataManagementClient = new DataManagementClient(authenticationProvider: staticAuthenticationProvider);
+        if (string.IsNullOrEmpty(_token))
+            throw new InvalidOperationException(
+                $"The access token is required to initialize the {nameof(DataManagementClient)}.");
+
+        StaticAuthenticationProvider staticAuthenticationProvider = new(_token);
+        _dataManagementClient = new DataManagementClient(authenticationProvider: staticAuthenticationProvider);
     }
 
+    #region Hubs
 
-    #region hubs
     public async Task GetHubsAsync()
     {
-        List<string> filter_id = new List<string> { "b.a4f95080-84fe-4281-8d0a-bd8c885695e0" };
-        List<string> filter_name = new List<string> { "Autodesk Forge Partner Development" };
-        List<string> filter_extension_type = new List<string> { "hubs:autodesk.bim360:Account" };
+        List<string> filter_id = ["b.a4f95080-84fe-4281-8d0a-bd8c885695e0"];
+        List<string> filter_name = ["Autodesk Forge Partner Development"];
+        List<string> filter_extension_type = ["hubs:autodesk.bim360:Account"];
 
-        Hubs hubs = await dataManagementClient.GetHubsAsync(filterId: filter_id, filterName: filter_name, filterExtensionType: filter_extension_type);
+        Hubs hubs = await _dataManagementClient.GetHubsAsync(filterId: filter_id, filterName: filter_name, filterExtensionType: filter_extension_type);
 
         List<HubData> hubsData = hubs.Data;
         foreach (var hub in hubsData)
@@ -43,7 +46,7 @@ class DataManagement
             string HubsId = hub.Id;
 
             Console.WriteLine(hubsType);
-            
+
             Console.WriteLine(HubsId);
             Console.WriteLine(hub.Attributes.Name);
             Region region = hub.Attributes.Region;
@@ -53,7 +56,7 @@ class DataManagement
 
     public async Task GetHubAsync()
     {
-        Hub hub = await dataManagementClient.GetHubAsync(hubId: hub_id);
+        Hub hub = await _dataManagementClient.GetHubAsync(hubId: _hubId);
 
         HubData hubData = hub.Data;
         TypeHub hubType = hubData.Type;
@@ -64,17 +67,16 @@ class DataManagement
         Console.WriteLine(hubData.Attributes.Name);
     }
 
-    #endregion hubs
+    #endregion Hubs
 
-
-    #region projects
+    #region Projects
 
     public async Task GetHubProjectsAsync()
     {
-        List<string> filter_id = new List<string> { "b.180e1bc8-6687-4029-a069-319f611de8a9" };
-        List<string> filter_extension_type = new List<string> { "projects:autodesk.bim360:Project" };
+        List<string> filter_id = ["b.180e1bc8-6687-4029-a069-319f611de8a9"];
+        List<string> filter_extension_type = ["projects:autodesk.bim360:Project"];
 
-        Projects projects = await dataManagementClient.GetHubProjectsAsync(hubId: hub_id, filterId: filter_id, filterExtensionType: filter_extension_type, pageNumber: 0, pageLimit: 1);
+        Projects projects = await _dataManagementClient.GetHubProjectsAsync(hubId: _hubId, filterId: filter_id, filterExtensionType: filter_extension_type, pageNumber: 0, pageLimit: 1);
 
         List<ProjectData> projectsData = projects.Data;
         foreach (var current in projectsData)
@@ -90,7 +92,7 @@ class DataManagement
 
     public async Task GetProjectAsync()
     {
-        Project project = await dataManagementClient.GetProjectAsync(hubId: hub_id, projectId: project_id);
+        Project project = await _dataManagementClient.GetProjectAsync(hubId: _hubId, projectId: _projectId);
 
         ProjectData projectData = project.Data;
         TypeProject hubProjectDataType = projectData.Type;
@@ -102,7 +104,7 @@ class DataManagement
 
     public async Task GetProjectHubAsync()
     {
-        Hub hub = await dataManagementClient.GetProjectHubAsync(hubId: hub_id, projectId: project_id);
+        Hub hub = await _dataManagementClient.GetProjectHubAsync(hubId: _hubId, projectId: _projectId);
 
         HubData hubData = hub.Data;
         TypeHub hubType = hubData.Type;
@@ -114,7 +116,7 @@ class DataManagement
 
     public async Task GetProjectTopFoldersAsync()
     {
-        TopFolders topFolders = await dataManagementClient.GetProjectTopFoldersAsync(hubId: hub_id, projectId: project_id, excludeDeleted: true, projectFilesOnly: false);
+        TopFolders topFolders = await _dataManagementClient.GetProjectTopFoldersAsync(hubId: _hubId, projectId: _projectId, excludeDeleted: true, projectFilesOnly: false);
 
         List<TopFolderData> topFolderData = topFolders.Data;
         foreach (var topFolder in topFolderData)
@@ -129,7 +131,7 @@ class DataManagement
 
     public async Task GetDownloadAsync()
     {
-        Download download = await dataManagementClient.GetDownloadAsync(projectId: project_id, downloadId: download_id);
+        Download download = await _dataManagementClient.GetDownloadAsync(projectId: _projectId, downloadId: _downloadId);
 
         DownloadData downloadData = download.Data;
         TypeDownloads downloadType = downloadData.Type;
@@ -141,7 +143,7 @@ class DataManagement
 
     public async Task GetDownloadJobAsync()
     {
-        Job job = await dataManagementClient.GetDownloadJobAsync(projectId: project_id, jobId: job_id);
+        Job job = await _dataManagementClient.GetDownloadJobAsync(projectId: _projectId, jobId: _jobId);
 
         JobData jobData = job.Data;
         TypeJob jobDataType = jobData.Type;
@@ -153,7 +155,7 @@ class DataManagement
 
     public async Task CreateDownloadAsync()
     {
-        DownloadPayload downloadPayload = new DownloadPayload()
+        DownloadPayload downloadPayload = new()
         {
             Jsonapi = new JsonApiVersion()
             {
@@ -176,14 +178,14 @@ class DataManagement
                         Data = new DownloadPayloadDataRelationshipsSourceData()
                         {
                             Type = TypeVersion.Versions,
-                            Id = version_id
+                            Id = _versionId
                         }
                     }
                 }
             }
         };
 
-        CreatedDownload createdDownload = await dataManagementClient.CreateDownloadAsync(projectId: project_id, downloadPayload: downloadPayload);
+        CreatedDownload createdDownload = await _dataManagementClient.CreateDownloadAsync(projectId: _projectId, downloadPayload: downloadPayload);
 
         List<CreatedDownloadData> createdDownloadData = createdDownload.Data;
         foreach (var downloadData in createdDownloadData)
@@ -198,7 +200,7 @@ class DataManagement
 
     public async Task CreateStorageAsync()
     {
-        StoragePayload storagePayload = new StoragePayload()
+        StoragePayload storagePayload = new()
         {
             Jsonapi = new JsonApiVersion()
             {
@@ -210,7 +212,6 @@ class DataManagement
                 Attributes = new StoragePayloadDataAttributes()
                 {
                     Name = "drawing.dwg",
-
                 },
                 Relationships = new StoragePayloadDataRelationships()
                 {
@@ -219,14 +220,14 @@ class DataManagement
                         Data = new StoragePayloadDataRelationshipsTargetData()
                         {
                             Type = TypeFolderItemsForStorage.Folders,
-                            Id = folder_id
+                            Id = _folderId
                         }
                     }
                 }
             }
         };
 
-        Storage storage = await dataManagementClient.CreateStorageAsync(projectId: project_id, storagePayload: storagePayload);
+        Storage storage = await _dataManagementClient.CreateStorageAsync(projectId: _projectId, storagePayload: storagePayload);
 
         StorageData storageData = storage.Data;
         TypeObject storageDataType = storageData.Type;
@@ -236,14 +237,13 @@ class DataManagement
         Console.WriteLine(storageDataId);
     }
 
-    #endregion projects
+    #endregion Projects
 
-
-    #region folders
+    #region Folders
 
     public async Task GetFolderAsync()
     {
-        Folder folder = await dataManagementClient.GetFolderAsync(projectId: project_id, folderId: folder_id);
+        Folder folder = await _dataManagementClient.GetFolderAsync(projectId: _projectId, folderId: _folderId);
 
         FolderData folderData = folder.Data;
         TypeFolder folderDataType = folderData.Type;
@@ -252,25 +252,22 @@ class DataManagement
         Console.WriteLine(folderDataType);
         Console.WriteLine(folderDataId);
     }
+
     public async Task GetFolderContentsAsync()
     {
-        List<FilterType> filter_type = new List<FilterType> { FilterType.Items, FilterType.Folders };
+        List<FilterType> filter_type = [FilterType.Items, FilterType.Folders];
 
-        FolderContents folderContents = await dataManagementClient.GetFolderContentsAsync(projectId: project_id, folderId: folder_id, filterType: filter_type);
+        FolderContents folderContents = await _dataManagementClient.GetFolderContentsAsync(projectId: _projectId, folderId: _folderId, filterType: filter_type);
         Console.WriteLine(folderContents);
         List<IFolderContentsData> folderContentsData = folderContents.Data;
 
-        // Prepare to serialize using the FolderContentsDataConverter
         var converter = new FolderContentsDataConverter();
         var serializer = new JsonSerializer();
 
         using (var stringWriter = new StringWriter())
         using (var jsonWriter = new JsonTextWriter(stringWriter))
         {
-            // Call WriteJson manually
             converter.WriteJson(jsonWriter, folderContents.Data, serializer);
-
-            // Output the resulting JSON string
             string jsonOutput = stringWriter.ToString();
             Console.WriteLine(jsonOutput);
         }
@@ -293,8 +290,7 @@ class DataManagement
 
     public async Task GetFolderParentAsync()
     {
-
-        Folder folder = await dataManagementClient.GetFolderParentAsync(projectId: project_id, folderId: folder_id);
+        Folder folder = await _dataManagementClient.GetFolderParentAsync(projectId: _projectId, folderId: _folderId);
 
         FolderData folderData = folder.Data;
         TypeFolder folderDataType = folderData.Type;
@@ -306,7 +302,7 @@ class DataManagement
 
     public async Task GetFolderRefsAsync()
     {
-        FolderRefs folderRefs = await dataManagementClient.GetFolderRefsAsync(projectId: project_id, folderId: folder_id);
+        FolderRefs folderRefs = await _dataManagementClient.GetFolderRefsAsync(projectId: _projectId, folderId: _folderId);
         List<IFolderRefsData> folderRefsData = folderRefs.Data;
         foreach (var current in folderRefsData)
         {
@@ -331,7 +327,7 @@ class DataManagement
 
     public async Task GetFolderRelationshipsLinksAsync()
     {
-        RelationshipLinks relationshipLinks = await dataManagementClient.GetFolderRelationshipsLinksAsync(projectId: project_id, folderId: folder_id);
+        RelationshipLinks relationshipLinks = await _dataManagementClient.GetFolderRelationshipsLinksAsync(projectId: _projectId, folderId: _folderId);
 
         List<RelationshipLinksData> relationshipLinksData = relationshipLinks.Data;
         foreach (var relationshipLinkData in relationshipLinksData)
@@ -346,7 +342,7 @@ class DataManagement
 
     public async Task GetFolderRelationshipsRefsAsync()
     {
-        RelationshipRefs relationshipRefs = await dataManagementClient.GetFolderRelationshipsRefsAsync(folderId: folder_id, projectId: project_id);
+        RelationshipRefs relationshipRefs = await _dataManagementClient.GetFolderRelationshipsRefsAsync(folderId: _folderId, projectId: _projectId);
 
         IRelationshipRefsLinks links = relationshipRefs.Links;
         Console.WriteLine(links);
@@ -385,8 +381,8 @@ class DataManagement
 
     public async Task GetFolderSearchAsync()
     {
-        List<string> filter = new List<string> { "John Doe" };
-        Search search = await dataManagementClient.GetFolderSearchAsync(projectId: project_id, folderId: folder_id, filterFieldName: "createUserName", filterValue: filter, pageNumber: 0);
+        List<string> filter = ["John Doe"];
+        Search search = await _dataManagementClient.GetFolderSearchAsync(projectId: _projectId, folderId: _folderId, filterFieldName: "createUserName", filterValue: filter, pageNumber: 0);
 
         List<VersionData> searchData = search.Data;
         foreach (var currentSearchData in searchData)
@@ -401,7 +397,7 @@ class DataManagement
 
     public async Task CreateFolderAsync()
     {
-        FolderPayload folderPayload = new FolderPayload()
+        FolderPayload folderPayload = new()
         {
             Jsonapi = new JsonApiVersion()
             {
@@ -426,7 +422,7 @@ class DataManagement
                         Data = new FolderPayloadDataRelationshipsParentData()
                         {
                             Type = TypeFolder.Folders,
-                            Id = folder_id,
+                            Id = _folderId,
                         }
                     }
                 }
@@ -435,7 +431,7 @@ class DataManagement
 
         Console.WriteLine(folderPayload);
 
-        Folder folder = await dataManagementClient.CreateFolderAsync(projectId: project_id, folderPayload: folderPayload);
+        Folder folder = await _dataManagementClient.CreateFolderAsync(projectId: _projectId, folderPayload: folderPayload);
 
         FolderData folderData = folder.Data;
         TypeFolder folderDataType = folderData.Type;
@@ -447,7 +443,7 @@ class DataManagement
 
     public async Task CreateFolderRelationshipsRefAsync()
     {
-        RelationshipRefsPayload relationshipRefsPayload = new RelationshipRefsPayload()
+        RelationshipRefsPayload relationshipRefsPayload = new()
         {
             Jsonapi = new JsonApiVersion()
             {
@@ -456,7 +452,7 @@ class DataManagement
             Data = new RelationshipRefsPayloadData()
             {
                 Type = TypeEntity.Versions,
-                Id = version_id,
+                Id = _versionId,
                 Meta = new RelationshipRefsPayloadDataMeta()
                 {
                     Extension = new BaseAttributesExtensionObjectWithoutSchemaLink()
@@ -468,7 +464,7 @@ class DataManagement
             }
         };
 
-        HttpResponseMessage relationship = await dataManagementClient.CreateFolderRelationshipsRefAsync(folderId: folder_id, projectId: project_id, relationshipRefsPayload: relationshipRefsPayload);
+        HttpResponseMessage relationship = await _dataManagementClient.CreateFolderRelationshipsRefAsync(folderId: _folderId, projectId: _projectId, relationshipRefsPayload: relationshipRefsPayload);
         var statusCode = relationship.StatusCode;
         string statusCodeString = statusCode.ToString();
 
@@ -477,7 +473,7 @@ class DataManagement
 
     public async Task PatchFolderAsync()
     {
-        ModifyFolderPayload modifyFolderPayload = new ModifyFolderPayload()
+        ModifyFolderPayload modifyFolderPayload = new()
         {
             Jsonapi = new JsonApiVersion()
             {
@@ -486,7 +482,7 @@ class DataManagement
             Data = new ModifyFolderPayloadData()
             {
                 Type = TypeFolder.Folders,
-                Id = folder_id,
+                Id = _folderId,
                 Attributes = new ModifyFolderPayloadDataAttributes()
                 {
                     Name = "Project 3096"
@@ -496,7 +492,7 @@ class DataManagement
 
         Console.WriteLine(modifyFolderPayload);
 
-        Folder folder = await dataManagementClient.PatchFolderAsync(projectId: project_id, folderId: folder_id, modifyFolderPayload: modifyFolderPayload);
+        Folder folder = await _dataManagementClient.PatchFolderAsync(projectId: _projectId, folderId: _folderId, modifyFolderPayload: modifyFolderPayload);
 
         FolderData folderData = folder.Data;
         TypeFolder folderDataType = folderData.Type;
@@ -506,14 +502,13 @@ class DataManagement
         Console.WriteLine(folderDataId);
     }
 
-    #endregion folders
+    #endregion Folders
 
-
-    #region items
+    #region Items
 
     public async Task GetItemAsync()
     {
-        Item item = await dataManagementClient.GetItemAsync(projectId: project_id, itemId: item_id);
+        Item item = await _dataManagementClient.GetItemAsync(projectId: _projectId, itemId: _itemId);
 
         ItemData itemData = item.Data;
         TypeItem itemDataType = itemData.Type;
@@ -525,7 +520,7 @@ class DataManagement
 
     public async Task GetItemParentFolderAsync()
     {
-        Folder folder = await dataManagementClient.GetItemParentFolderAsync(projectId: project_id, itemId: item_id);
+        Folder folder = await _dataManagementClient.GetItemParentFolderAsync(projectId: _projectId, itemId: _itemId);
 
         FolderData folderData = folder.Data;
         TypeFolder folderDataType = folderData.Type;
@@ -537,7 +532,7 @@ class DataManagement
 
     public async Task GetItemRefsAsync()
     {
-        Refs refs = await dataManagementClient.GetItemRefsAsync(projectId: project_id, itemId: item_id);
+        Refs refs = await _dataManagementClient.GetItemRefsAsync(projectId: _projectId, itemId: _itemId);
 
         List<IRefsData> refsData = refs.Data;
         foreach (var current in refsData)
@@ -563,7 +558,7 @@ class DataManagement
 
     public async Task GetItemRelationshipsLinksAsync()
     {
-        RelationshipLinks relationshipLinks = await dataManagementClient.GetItemRelationshipsLinksAsync(projectId: project_id, itemId: item_id);
+        RelationshipLinks relationshipLinks = await _dataManagementClient.GetItemRelationshipsLinksAsync(projectId: _projectId, itemId: _itemId);
 
         List<RelationshipLinksData> relationshipLinksData = relationshipLinks.Data;
         foreach (var relationshipLinkData in relationshipLinksData)
@@ -578,7 +573,7 @@ class DataManagement
 
     public async Task GetItemRelationshipsRefsAsync()
     {
-        RelationshipRefs relationshipRefs = await dataManagementClient.GetItemRelationshipsRefsAsync(projectId: project_id, itemId: item_id);
+        RelationshipRefs relationshipRefs = await _dataManagementClient.GetItemRelationshipsRefsAsync(projectId: _projectId, itemId: _itemId);
 
         IRelationshipRefsLinks links = relationshipRefs.Links;
         Console.WriteLine(links);
@@ -617,7 +612,7 @@ class DataManagement
 
     public async Task GetItemTipAsync()
     {
-        ItemTip itemTip = await dataManagementClient.GetItemTipAsync(projectId: project_id, itemId: item_id);
+        ItemTip itemTip = await _dataManagementClient.GetItemTipAsync(projectId: _projectId, itemId: _itemId);
 
         VersionData itemTipData = itemTip.Data;
         TypeVersion itemTipDataType = itemTipData.Type;
@@ -629,7 +624,7 @@ class DataManagement
 
     public async Task GetItemVersionsAsync()
     {
-        Versions versions = await dataManagementClient.GetItemVersionsAsync(projectId: project_id, itemId: item_id);
+        Versions versions = await _dataManagementClient.GetItemVersionsAsync(projectId: _projectId, itemId: _itemId);
 
         List<VersionData> versionsData = versions.Data;
         foreach (var versionData in versionsData)
@@ -644,7 +639,7 @@ class DataManagement
 
     public async Task CreateItemAsync()
     {
-        ItemPayload itemPayload = new ItemPayload()
+        ItemPayload itemPayload = new()
         {
             Jsonapi = new JsonApiVersion()
             {
@@ -677,7 +672,7 @@ class DataManagement
                         Data = new ItemPayloadDataRelationshipsParentData()
                         {
                             Type = TypeFolder.Folders,
-                            Id = folder_id,
+                            Id = _folderId,
                         }
                     }
                 }
@@ -712,7 +707,7 @@ class DataManagement
             }
         };
 
-        CreatedItem item = await dataManagementClient.CreateItemAsync(projectId: project_id, itemPayload: itemPayload);
+        CreatedItem item = await _dataManagementClient.CreateItemAsync(projectId: _projectId, itemPayload: itemPayload);
 
         ItemData itemData = item.Data;
         TypeItem itemDataType = itemData.Type;
@@ -724,7 +719,7 @@ class DataManagement
 
     public async Task CreateItemRelationshipsRefAsync()
     {
-        RelationshipRefsPayload relationshipRefsPayload = new RelationshipRefsPayload()
+        RelationshipRefsPayload relationshipRefsPayload = new()
         {
             Jsonapi = new JsonApiVersion()
             {
@@ -733,7 +728,7 @@ class DataManagement
             Data = new RelationshipRefsPayloadData()
             {
                 Type = TypeEntity.Versions,
-                Id = version_id,
+                Id = _versionId,
                 Meta = new RelationshipRefsPayloadDataMeta()
                 {
                     Extension = new BaseAttributesExtensionObjectWithoutSchemaLink()
@@ -745,7 +740,7 @@ class DataManagement
             }
         };
 
-        HttpResponseMessage responseMessage = await dataManagementClient.CreateItemRelationshipsRefAsync(projectId: project_id, itemId: item_id, relationshipRefsPayload: relationshipRefsPayload);
+        HttpResponseMessage responseMessage = await _dataManagementClient.CreateItemRelationshipsRefAsync(projectId: _projectId, itemId: _itemId, relationshipRefsPayload: relationshipRefsPayload);
         var statusCode = responseMessage.StatusCode;
         string statusCodeString = statusCode.ToString();
 
@@ -763,7 +758,7 @@ class DataManagement
             Data = new ModifyItemPayloadData()
             {
                 Type = TypeItem.Items,
-                Id = item_id,
+                Id = _itemId,
                 Attributes = new ModifyItemPayloadDataAttributes()
                 {
                     DisplayName = "newDrawing.rvt"
@@ -771,7 +766,7 @@ class DataManagement
             }
         };
 
-        Item item = await dataManagementClient.PatchItemAsync(projectId: project_id, itemId: item_id, modifyItemPayload: modifyItemPayload);
+        Item item = await _dataManagementClient.PatchItemAsync(projectId: _projectId, itemId: _itemId, modifyItemPayload: modifyItemPayload);
 
         ItemData itemData = item.Data;
         TypeItem itemDataType = itemData.Type;
@@ -781,13 +776,13 @@ class DataManagement
         Console.WriteLine(itemDataId);
     }
 
-    #endregion items
+    #endregion Items
 
+    #region Versions
 
-    #region versions
     public async Task GetVersionAsync()
     {
-        ModelVersion versionDetails = await dataManagementClient.GetVersionAsync(projectId: project_id, versionId: version_id);
+        ModelVersion versionDetails = await _dataManagementClient.GetVersionAsync(projectId: _projectId, versionId: _versionId);
 
         VersionData versionDetailsData = versionDetails.Data;
         TypeVersion versionDetailsDataType = versionDetailsData.Type;
@@ -799,7 +794,7 @@ class DataManagement
 
     public async Task GetVersionDownloadFormatsAsync()
     {
-        DownloadFormats downloadFormats = await dataManagementClient.GetVersionDownloadFormatsAsync(projectId: project_id, versionId: version_id);
+        DownloadFormats downloadFormats = await _dataManagementClient.GetVersionDownloadFormatsAsync(projectId: _projectId, versionId: _versionId);
 
         DownloadFormatsData downloadFormatsData = downloadFormats.Data;
         TypeDownloadformats downloadFormatsDataType = downloadFormatsData.Type;
@@ -811,7 +806,7 @@ class DataManagement
 
     public async Task GetVersionDownloadsAsync()
     {
-        Downloads downloads = await dataManagementClient.GetVersionDownloadsAsync(projectId: project_id, versionId: version_id);
+        Downloads downloads = await _dataManagementClient.GetVersionDownloadsAsync(projectId: _projectId, versionId: _versionId);
 
         List<DownloadData> downloadsData = downloads.Data;
         foreach (var downloadData in downloadsData)
@@ -826,7 +821,7 @@ class DataManagement
 
     public async Task GetVersionItemAsync()
     {
-        Item item = await dataManagementClient.GetVersionItemAsync(projectId: project_id, versionId: version_id);
+        Item item = await _dataManagementClient.GetVersionItemAsync(projectId: _projectId, versionId: _versionId);
 
         ItemData itemData = item.Data;
         TypeItem itemDataType = itemData.Type;
@@ -838,7 +833,7 @@ class DataManagement
 
     public async Task GetVersionRefsAsync()
     {
-        Refs refs = await dataManagementClient.GetVersionRefsAsync(projectId: project_id, versionId: version_id);
+        Refs refs = await _dataManagementClient.GetVersionRefsAsync(projectId: _projectId, versionId: _versionId);
 
         List<IRefsData> refsData = refs.Data;
         foreach (var current in refsData)
@@ -864,7 +859,7 @@ class DataManagement
 
     public async Task GetVersionRelationshipsLinksAsync()
     {
-        RelationshipLinks relationshipLinks = await dataManagementClient.GetVersionRelationshipsLinksAsync(projectId: project_id, versionId: version_id);
+        RelationshipLinks relationshipLinks = await _dataManagementClient.GetVersionRelationshipsLinksAsync(projectId: _projectId, versionId: _versionId);
 
         List<RelationshipLinksData> relationshipLinksData = relationshipLinks.Data;
         foreach (var relationshipLinkData in relationshipLinksData)
@@ -879,7 +874,7 @@ class DataManagement
 
     public async Task GetVersionRelationshipsRefsAsync()
     {
-        RelationshipRefs relationshipRefs = await dataManagementClient.GetVersionRelationshipsRefsAsync(projectId: project_id, versionId: version_id);
+        RelationshipRefs relationshipRefs = await _dataManagementClient.GetVersionRelationshipsRefsAsync(projectId: _projectId, versionId: _versionId);
 
         IRelationshipRefsLinks links = relationshipRefs.Links;
         Console.WriteLine(links);
@@ -943,7 +938,7 @@ class DataManagement
                         Data = new VersionPayloadDataRelationshipsItemData()
                         {
                             Type = TypeItem.Items,
-                            Id = item_id
+                            Id = _itemId
                         }
                     },
                     Storage = new VersionPayloadDataRelationshipsStorage()
@@ -951,14 +946,14 @@ class DataManagement
                         Data = new VersionPayloadDataRelationshipsStorageData()
                         {
                             Type = TypeObject.Objects,
-                            Id = storage_urn
+                            Id = _storageUrn
                         }
                     }
                 }
             }
         };
 
-        CreatedVersion createdVersion = await dataManagementClient.CreateVersionAsync(projectId: project_id, versionPayload: versionPayload);
+        CreatedVersion createdVersion = await _dataManagementClient.CreateVersionAsync(projectId: _projectId, versionPayload: versionPayload);
 
         CreatedVersionData createdVersionData = createdVersion.Data;
         TypeVersion createdVersionDataType = createdVersionData.Type;
@@ -970,7 +965,7 @@ class DataManagement
 
     public async Task CreateVersionRelationshipsRefAsync()
     {
-        RelationshipRefsPayload relationshipRefsPayload = new RelationshipRefsPayload()
+        RelationshipRefsPayload relationshipRefsPayload = new()
         {
             Jsonapi = new JsonApiVersion()
             {
@@ -979,7 +974,7 @@ class DataManagement
             Data = new RelationshipRefsPayloadData()
             {
                 Type = TypeEntity.Versions,
-                Id = version_id,
+                Id = _versionId,
                 Meta = new RelationshipRefsPayloadDataMeta()
                 {
                     Extension = new BaseAttributesExtensionObjectWithoutSchemaLink()
@@ -991,7 +986,7 @@ class DataManagement
             }
         };
 
-        HttpResponseMessage responseMessage = await dataManagementClient.CreateVersionRelationshipsRefAsync(projectId: project_id, versionId: version_id, relationshipRefsPayload: relationshipRefsPayload);
+        HttpResponseMessage responseMessage = await _dataManagementClient.CreateVersionRelationshipsRefAsync(projectId: _projectId, versionId: _versionId, relationshipRefsPayload: relationshipRefsPayload);
 
         var statusCode = responseMessage.StatusCode;
         string statusCodeString = statusCode.ToString();
@@ -1010,7 +1005,7 @@ class DataManagement
             Data = new ModifyVersionPayloadData()
             {
                 Type = TypeVersion.Versions,
-                Id = version_id,
+                Id = _versionId,
                 Attributes = new ModifyVersionPayloadDataAttributes()
                 {
                     Name = "project2624.rvt"
@@ -1018,7 +1013,7 @@ class DataManagement
             }
         };
 
-        ModelVersion versionDetails = await dataManagementClient.PatchVersionAsync(projectId: project_id, versionId: version_id, modifyVersionPayload: modifyVersionPayload);
+        ModelVersion versionDetails = await _dataManagementClient.PatchVersionAsync(projectId: _projectId, versionId: _versionId, modifyVersionPayload: modifyVersionPayload);
 
         VersionData versionDetailsData = versionDetails.Data;
         TypeVersion versionDetailsDataType = versionDetailsData.Type;
@@ -1027,13 +1022,14 @@ class DataManagement
         Console.WriteLine(versionDetailsDataType);
         Console.WriteLine(versionDetailsDataId);
     }
-    #endregion versions
 
-    #region commands
+    #endregion Versions
+
+    #region Commands
 
     public async Task ExecuteCheckPermissionCommandAsync()
     {
-        CheckPermissionPayload checkPermissionPayload = new CheckPermissionPayload()
+        CheckPermissionPayload checkPermissionPayload = new()
         {
             Type = TypeCommands.Commands,
             Attributes = new CheckPermissionPayloadAttributes()
@@ -1044,12 +1040,11 @@ class DataManagement
                     VarVersion = "1.0.0",
                     Data = new CheckPermissionPayloadAttributesExtensionData()
                     {
-
                         RequiredActions = new List<string>
-                            {
-                               "download",
-                               "view",
-                            }
+                        {
+                            "download",
+                            "view",
+                        }
                     }
                 }
             },
@@ -1058,18 +1053,18 @@ class DataManagement
                 Resources = new CheckPermissionPayloadRelationshipsResources()
                 {
                     Data = new List<CheckPermissionPayloadRelationshipsResourcesData>
+                    {
+                        new CheckPermissionPayloadRelationshipsResourcesData
                         {
-                            new CheckPermissionPayloadRelationshipsResourcesData
-                            {
-                                Type = TypeEntity.Folders,
-                                Id = "urn:adsk.wipprod:fs.folder:co.-tmPjozvRFC-q0MiANsZew"
-                            },
-                        }
+                            Type = TypeEntity.Folders,
+                            Id = "urn:adsk.wipprod:fs.folder:co.-tmPjozvRFC-q0MiANsZew"
+                        },
+                    }
                 }
             }
         };
 
-        CheckPermission checkPermission = await dataManagementClient.ExecuteCheckPermissionAsync(projectId: project_id, checkPermissionPayload: checkPermissionPayload);
+        CheckPermission checkPermission = await _dataManagementClient.ExecuteCheckPermissionAsync(projectId: _projectId, checkPermissionPayload: checkPermissionPayload);
 
         TypeCommands checkPermissionType = checkPermission.Type;
         string checkPermissionId = checkPermission.Id;
@@ -1082,7 +1077,7 @@ class DataManagement
 
     public async Task ExecuteListRefsCommandAsync()
     {
-        ListRefsPayload listRefsPayload = new ListRefsPayload()
+        ListRefsPayload listRefsPayload = new()
         {
             Type = TypeCommands.Commands,
             Attributes = new ListRefsPayloadAttributes()
@@ -1098,39 +1093,33 @@ class DataManagement
                 Resources = new ListRefsPayloadRelationshipsResources()
                 {
                     Data = new List<ListRefsPayloadRelationshipsResourcesData>
+                    {
+                        new ListRefsPayloadRelationshipsResourcesData
                         {
-                            new ListRefsPayloadRelationshipsResourcesData
-                            {
-                                Type = TypeVersion.Versions,
-                                Id = version_id
-                            },
-                        }
+                            Type = TypeVersion.Versions,
+                            Id = _versionId
+                        },
+                    }
                 }
             }
         };
 
-        ListRefs listRefs = await dataManagementClient.ExecuteListRefsAsync(projectId: project_id, listRefsPayload: listRefsPayload);
+        ListRefs listRefs = await _dataManagementClient.ExecuteListRefsAsync(projectId: _projectId, listRefsPayload: listRefsPayload);
 
         TypeCommands listRefsType = listRefs.Type;
         string listRefsId = listRefs.Id;
 
         Console.WriteLine(listRefsType);
         Console.WriteLine(listRefsId);
-
         Console.WriteLine(listRefs);
 
-
-        // Prepare to serialize using the ListRefsIncludedConverter
         var converter = new ListRefsIncludedConverter();
         var serializer = new JsonSerializer();
 
         using (var stringWriter = new StringWriter())
         using (var jsonWriter = new JsonTextWriter(stringWriter))
         {
-            // Call WriteJson manually
             converter.WriteJson(jsonWriter, listRefs.Included, serializer);
-
-            // Output the resulting JSON string
             string jsonOutput = stringWriter.ToString();
             Console.WriteLine(jsonOutput);
         }
@@ -1153,7 +1142,7 @@ class DataManagement
 
     public async Task ExecuteListItemsCommandAsync()
     {
-        ListItemsPayload listItemsPayload = new ListItemsPayload()
+        ListItemsPayload listItemsPayload = new()
         {
             Type = TypeCommands.Commands,
             Attributes = new ListItemsPayloadAttributes()
@@ -1169,18 +1158,18 @@ class DataManagement
                 Resources = new ListItemsPayloadRelationshipsResources()
                 {
                     Data = new List<ListItemsPayloadRelationshipsResourcesData>
+                    {
+                        new ListItemsPayloadRelationshipsResourcesData
                         {
-                            new ListItemsPayloadRelationshipsResourcesData
-                            {
-                                Type = TypeItem.Items,
-                                Id = item_id
-                            },
-                        }
+                            Type = TypeItem.Items,
+                            Id = _itemId
+                        },
+                    }
                 }
             }
         };
 
-        ListItems listItems = await dataManagementClient.ExecuteListItemsAsync(projectId: project_id, listItemsPayload: listItemsPayload);
+        ListItems listItems = await _dataManagementClient.ExecuteListItemsAsync(projectId: _projectId, listItemsPayload: listItemsPayload);
 
         TypeCommands listItemsType = listItems.Type;
         string listItemsId = listItems.Id;
@@ -1193,7 +1182,7 @@ class DataManagement
 
     public async Task ExecuteGetPublishModelJobAsync()
     {
-        PublishModelJobPayload publishModelJobPayload = new PublishModelJobPayload()
+        PublishModelJobPayload publishModelJobPayload = new()
         {
             Type = TypeCommands.Commands,
             Attributes = new PublishModelJobPayloadAttributes()
@@ -1209,18 +1198,18 @@ class DataManagement
                 Resources = new PublishModelJobPayloadRelationshipsResources()
                 {
                     Data = new List<PublishModelJobPayloadRelationshipsResourcesData>
+                    {
+                        new PublishModelJobPayloadRelationshipsResourcesData
                         {
-                            new PublishModelJobPayloadRelationshipsResourcesData
-                            {
-                                Type = TypeItem.Items,
-                                Id = item_id
-                            },
-                        }
+                            Type = TypeItem.Items,
+                            Id = _itemId
+                        },
+                    }
                 }
             }
         };
 
-        PublishModelJob publishModelJob = await dataManagementClient.ExecuteGetPublishModelJobAsync(projectId: project_id, publishModelJobPayload: publishModelJobPayload);
+        PublishModelJob publishModelJob = await _dataManagementClient.ExecuteGetPublishModelJobAsync(projectId: _projectId, publishModelJobPayload: publishModelJobPayload);
 
         TypeCommands publishModelJobType = publishModelJob.Type;
         string publishModelJobId = publishModelJob.Id;
@@ -1233,7 +1222,7 @@ class DataManagement
 
     public async Task ExecutePublishModelAsync()
     {
-        PublishModelPayload publishModelPayload = new PublishModelPayload()
+        PublishModelPayload publishModelPayload = new()
         {
             Type = TypeCommands.Commands,
             Attributes = new PublishModelPayloadAttributes()
@@ -1249,18 +1238,18 @@ class DataManagement
                 Resources = new PublishModelPayloadRelationshipsResources()
                 {
                     Data = new List<PublishModelPayloadRelationshipsResourcesData>
+                    {
+                        new PublishModelPayloadRelationshipsResourcesData
                         {
-                            new PublishModelPayloadRelationshipsResourcesData
-                            {
-                                Type = TypeItem.Items,
-                                Id = item_id
-                            },
-                        }
+                            Type = TypeItem.Items,
+                            Id = _itemId
+                        },
+                    }
                 }
             }
         };
 
-        PublishModel publishModel = await dataManagementClient.ExecutePublishModelAsync(projectId: project_id, publishModelPayload: publishModelPayload);
+        PublishModel publishModel = await _dataManagementClient.ExecutePublishModelAsync(projectId: _projectId, publishModelPayload: publishModelPayload);
 
         TypeCommands publishModelType = publishModel.Type;
         string publishModelId = publishModel.Id;
@@ -1273,7 +1262,7 @@ class DataManagement
 
     public async Task ExecutePublishWithoutLinksAsync()
     {
-        PublishWithoutLinksPayload publishWithoutLinksPayload = new PublishWithoutLinksPayload()
+        PublishWithoutLinksPayload publishWithoutLinksPayload = new()
         {
             Type = TypeCommands.Commands,
             Attributes = new PublishWithoutLinksPayloadAttributes()
@@ -1289,18 +1278,18 @@ class DataManagement
                 Resources = new PublishWithoutLinksPayloadRelationshipsResources()
                 {
                     Data = new List<PublishWithoutLinksPayloadRelationshipsResourcesData>
+                    {
+                        new PublishWithoutLinksPayloadRelationshipsResourcesData
                         {
-                            new PublishWithoutLinksPayloadRelationshipsResourcesData
-                            {
-                                Type = TypeItem.Items,
-                                Id = item_id
-                            },
-                        }
+                            Type = TypeItem.Items,
+                            Id = _itemId
+                        },
+                    }
                 }
             }
         };
 
-        PublishWithoutLinks publishWithoutLinks = await dataManagementClient.ExecutePublishWithoutLinksAsync(projectId: project_id, publishWithoutLinksPayload: publishWithoutLinksPayload);
+        PublishWithoutLinks publishWithoutLinks = await _dataManagementClient.ExecutePublishWithoutLinksAsync(projectId: _projectId, publishWithoutLinksPayload: publishWithoutLinksPayload);
 
         TypeCommands publishWithoutLinksType = publishWithoutLinks.Type;
         string publishWithoutLinksId = publishWithoutLinks.Id;
@@ -1311,74 +1300,6 @@ class DataManagement
         Console.WriteLine(publishWithoutLinks);
     }
 
-    #endregion commands
+    #endregion Commands
 
-    public static async Task Main(string[] args)
-    {
-        DotNetEnv.Env.Load();
-
-        DataManagement dataManagement = new DataManagement();
-
-        // Initialise SDKManager & AuthClient
-        dataManagement.Initialise();
-
-        // Hubs
-        // await dataManagement.GetHubsAsync();
-        // await dataManagement.GetHubAsync();
-
-        // // Projects
-        // await dataManagement.GetHubProjectsAsync();
-        // await dataManagement.GetProjectAsync();
-        // await dataManagement.GetProjectHubAsync();
-        // await dataManagement.GetProjectTopFoldersAsync();
-        // await dataManagement.GetDownloadAsync();
-        // await dataManagement.GetDownloadJobAsync();
-        // await dataManagement.StartDownloadAsync();
-        // await dataManagement.CreateStorageAsync();
-
-        // Folders
-        // await dataManagement.GetFolderAsync();
-        // await dataManagement.GetFolderContentsAsync();
-        // await dataManagement.GetFolderParentAsync();
-        // await dataManagement.GetFolderRefsAsync();
-        // await dataManagement.GetFolderRelationshipsLinksAsync();
-        // await dataManagement.GetFolderRelationshipsRefsAsync();
-        // await dataManagement.GetFolderSearchAsync();
-        // await dataManagement.CreateFolderAsync(); 
-        // await dataManagement.CreateFolderRelationshipsRefAsync();
-        // await dataManagement.PatchFolderAsync();
-
-        // // Items
-        // await dataManagement.GetItemAsync();
-        // await dataManagement.GetItemParentFolderAsync();
-        // await dataManagement.GetItemRefsAsync();
-        // await dataManagement.GetItemRelationshipsLinksAsync();
-        // await dataManagement.GetItemRelationshipsRefsAsync();
-        // await dataManagement.GetItemTipAsync();
-        // await dataManagement.GetItemVersionsAsync();
-        // await dataManagement.CreateItemAsync();
-        // await dataManagement.CreateItemRelationshipsRefAsync();
-        // await dataManagement.PatchItemAsync();
-
-        // // Versions
-        // await dataManagement.GetVersionAsync();
-        // await dataManagement.GetVersionDownloadFormatsAsync();
-        // await dataManagement.GetVersionDownloadsAsync();
-        // await dataManagement.GetVersionItemAsync();
-        // await dataManagement.GetVersionRefsAsync();
-        // await dataManagement.GetVersionRelationshipsLinksAsync();
-        // await dataManagement.GetVersionRelationshipsRefsAsync();
-        // await dataManagement.CreateVersionAsync();
-        // await dataManagement.CreateVersionRelationshipsRefAsync();
-        // await dataManagement.PatchVersionAsync();
-
-        // Commands
-        // await dataManagement.ExecuteCheckPermissionCommandAsync();
-        // await dataManagement.ExecuteListRefsCommandAsync();
-        // await dataManagement.ExecuteListItemsCommandAsync();
-        // await dataManagement.ExecuteGetPublishModelJobAsync();
-        // await dataManagement.ExecutePublishModelAsync();
-        // await dataManagement.ExecutePublishWithoutLinksAsync();
-    }
 }
-
