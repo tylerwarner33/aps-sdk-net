@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="source/Autodesk.DataManagement.csproj" />
+  <Project Path="test/Autodesk.DataManagement.Test.csproj" />
+</Solution>

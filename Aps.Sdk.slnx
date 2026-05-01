@@ -1,0 +1,36 @@
+<Solution>
+  <Folder Name="/authentication/">
+    <Project Path="authentication/source/Autodesk.Authentication.csproj" />
+  </Folder>
+  <Folder Name="/construction/" />
+  <Folder Name="/construction/accountadmin/">
+    <Project Path="construction/accountadmin/source/Autodesk.Construction.AccountAdmin.csproj" />
+  </Folder>
+  <Folder Name="/datamanagement/">
+    <Project Path="datamanagement/source/Autodesk.DataManagement.csproj" />
+  </Folder>
+  <Folder Name="/issues/">
+    <Project Path="construction/issues/source/Autodesk.Construction.Issues.csproj" />
+  </Folder>
+  <Folder Name="/modelderivative/">
+    <Project Path="modelderivative/source/Autodesk.ModelDerivative.csproj" />
+  </Folder>
+  <Folder Name="/oss/">
+    <Project Path="oss/source/Autodesk.Oss.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="CHANGELOG.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE.txt" />
+    <File Path="nuget.config" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/webhooks/">
+    <Project Path="webhooks/source/Autodesk.Webhooks.csproj" />
+  </Folder>
+  <Project Path="sdkmanager/Autodesk.Sdk.Manager.csproj" />
+</Solution>

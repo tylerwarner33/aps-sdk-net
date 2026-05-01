@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="source/Autodesk.Authentication.csproj" />
+  <Project Path="test/Autodesk.Authentication.Test.csproj" />
+</Solution>

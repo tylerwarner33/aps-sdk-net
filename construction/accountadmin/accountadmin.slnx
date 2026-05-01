@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="source/Autodesk.Construction.AccountAdmin.csproj" />
+  <Project Path="test/Autodesk.Construction.AccountAdmin.Test.csproj" />
+</Solution>

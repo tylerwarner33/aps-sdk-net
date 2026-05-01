@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="source/Autodesk.Construction.Issues.csproj" />
+  <Project Path="test/Autodesk.Construction.Issues.Test.csproj" />
+</Solution>

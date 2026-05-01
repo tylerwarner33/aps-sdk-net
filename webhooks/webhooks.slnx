@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="source/Autodesk.Webhooks.csproj" />
+  <Project Path="test/Autodesk.Webhooks.Test.csproj" />
+</Solution>

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="source/Autodesk.ModelDerivative.csproj" />
+  <Project Path="test/Autodesk.ModelDerivative.Test.csproj" />
+</Solution>

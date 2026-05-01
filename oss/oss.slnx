@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="source/Autodesk.Oss.csproj" />
+  <Project Path="test/Autodesk.Oss.Test.csproj" />
+</Solution>
