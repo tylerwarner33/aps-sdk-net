@@ -221,6 +221,59 @@ namespace Autodesk.DataManagement.Http
         /// <returns>Task of ApiResponse&lt;Refs&gt;</returns>
         
         System.Threading.Tasks.Task<ApiResponse<Refs>> GetItemRefsAsync (string projectId, string itemId, string xUserId= default(string), List<FilterTypeVersion> filterType= default(List<FilterTypeVersion>), List<string> filterId= default(List<string>), List<string> filterExtensionType= default(List<string>),  string accessToken = null, bool throwOnError = true);
+
+        /// <summary>
+        /// List Related Resources for an Item
+        /// </summary>
+        /// <remarks>
+        ///Returns the resources (items, folders, and versions) that have a custom relationship with the specified item. Custom relationships can be established between an item and other resources within the data domain service (folders, items, and versions).
+///
+///
+///Each relationship is defined by the ID of the object at the other end of the relationship, together with type, attributes, and relationships links.
+///Callers will typically use a filter parameter to restrict the response to the custom relationship types (`filter[meta.refType]`) they are interested in.
+///
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="projectId">
+         ///The unique identifier of a project. 
+///
+///For BIM 360 Docs and ACC Docs, a hub ID corresponds to an Account ID. To convert a BIM 360 or ACC Account ID to a hub ID, prefix the Account ID with `b.`. For example, an Account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///Similarly, to convert an ACC or BIM 360 project ID to a Data Management project ID prefix the ACC or BIM 360 project ID with `b.`. For example, a project ID of `c8b0c73d-3ae9` translates to a project ID of `b.c8b0c73d-3ae9`.
+         /// </param>
+         /// <param name="itemId">
+         ///The unique identifier of an item.
+         /// </param>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterType">
+         ///Filter by the `type` of the `ref` target. Supported values include `folders`, `items`, and `versions`. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;Refs&gt;</returns>
+        
+        System.Threading.Tasks.Task<ApiResponse<Refs>> GetItemRefsAsync (string projectId, string itemId, IEnumerable<QueryFilter> filters, string xUserId= default(string), List<FilterTypeVersion> filterType= default(List<FilterTypeVersion>), List<string> filterId= default(List<string>), List<string> filterExtensionType= default(List<string>),  string accessToken = null, bool throwOnError = true);
         /// <summary>
         /// List Relationship Links for an Item
         /// </summary>
@@ -292,6 +345,64 @@ namespace Autodesk.DataManagement.Http
         /// <returns>Task of ApiResponse&lt;RelationshipRefs&gt;</returns>
         
         System.Threading.Tasks.Task<ApiResponse<RelationshipRefs>> GetItemRelationshipsRefsAsync (string projectId, string itemId, string xUserId= default(string), List<FilterTypeVersion> filterType= default(List<FilterTypeVersion>), List<string> filterId= default(List<string>), FilterRefType? filterRefType= null, FilterDirection? filterDirection= null, List<string> filterExtensionType= default(List<string>),  string accessToken = null, bool throwOnError = true);
+
+        /// <summary>
+        /// List Custom Relationships for an Item
+        /// </summary>
+        /// <remarks>
+        ///Returns the custom relationships that are associated with the specified item. Custom relationships can be established between an item and other resources within the `data` domain service (folders, items, and versions).
+///
+///Each relationship is defined by the ID of the object at the other end of the relationship, together with type, specific reference meta including extension data.
+///Callers will typically use a filter parameter to restrict the response to the custom relationship types (`filter[meta.refType]`) they are interested in.
+///The response body will have an included array that contains the resources in the relationship, which is essentially what is returned by the [List Related Resources for an Item](/en/docs/data/v2/reference/http/projects-project_id-items-item_id-refs-GET/) operation.
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="projectId">
+         ///The unique identifier of a project. 
+///
+///For BIM 360 Docs and ACC Docs, a hub ID corresponds to an Account ID. To convert a BIM 360 or ACC Account ID to a hub ID, prefix the Account ID with `b.`. For example, an Account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///Similarly, to convert an ACC or BIM 360 project ID to a Data Management project ID prefix the ACC or BIM 360 project ID with `b.`. For example, a project ID of `c8b0c73d-3ae9` translates to a project ID of `b.c8b0c73d-3ae9`.
+         /// </param>
+         /// <param name="itemId">
+         ///The unique identifier of an item.
+         /// </param>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterType">
+         ///Filter by the `type` of the `ref` target. Supported values include `folders`, `items`, and `versions`. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterRefType">
+         ///Filter by `refType`. Possible values: `derived`, `dependencies`, `auxiliary`, `xrefs`, and `includes`. (optional)
+         /// </param>
+         /// <param name="filterDirection">
+         ///Filter by the direction of the reference. Possible values: `from` and `to`. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;RelationshipRefs&gt;</returns>
+        
+        System.Threading.Tasks.Task<ApiResponse<RelationshipRefs>> GetItemRelationshipsRefsAsync (string projectId, string itemId, IEnumerable<QueryFilter> filters, string xUserId= default(string), List<FilterTypeVersion> filterType= default(List<FilterTypeVersion>), List<string> filterId= default(List<string>), FilterRefType? filterRefType= null, FilterDirection? filterDirection= null, List<string> filterExtensionType= default(List<string>),  string accessToken = null, bool throwOnError = true);
         /// <summary>
         /// Get Tip Version of an Item
         /// </summary>
@@ -357,6 +468,60 @@ namespace Autodesk.DataManagement.Http
         /// <returns>Task of ApiResponse&lt;Versions&gt;</returns>
         
         System.Threading.Tasks.Task<ApiResponse<Versions>> GetItemVersionsAsync (string projectId, string itemId, string xUserId= default(string), List<string> filterId= default(List<string>), List<string> filterExtensionType= default(List<string>), List<int> filterVersionNumber= default(List<int>), int pageNumber= default(int), int pageLimit= default(int),  string accessToken = null, bool throwOnError = true);
+
+        /// <summary>
+        /// List all Versions of an Item
+        /// </summary>
+        /// <remarks>
+        ///Lists all versions of the specified item. A project can contain multiple versions of a resource item.
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="projectId">
+         ///The unique identifier of a project. 
+///
+///For BIM 360 Docs and ACC Docs, a hub ID corresponds to an Account ID. To convert a BIM 360 or ACC Account ID to a hub ID, prefix the Account ID with `b.`. For example, an Account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///Similarly, to convert an ACC or BIM 360 project ID to a Data Management project ID prefix the ACC or BIM 360 project ID with `b.`. For example, a project ID of `c8b0c73d-3ae9` translates to a project ID of `b.c8b0c73d-3ae9`.
+         /// </param>
+         /// <param name="itemId">
+         ///The unique identifier of an item.
+         /// </param>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="filterVersionNumber">
+         ///Filter by versionNumber. (optional)
+         /// </param>
+         /// <param name="pageNumber">
+         ///Specifies what page to return. Page numbers are 0-based (the first page is page 0). (optional)
+         /// </param>
+         /// <param name="pageLimit">
+         ///Specifies the maximum number of elements to return in the page. The default value is 200. The min value is 1. The max value is 200. (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;Versions&gt;</returns>
+        
+        System.Threading.Tasks.Task<ApiResponse<Versions>> GetItemVersionsAsync (string projectId, string itemId, IEnumerable<QueryFilter> filters, string xUserId= default(string), List<string> filterId= default(List<string>), List<string> filterExtensionType= default(List<string>), List<int> filterVersionNumber= default(List<int>), int pageNumber= default(int), int pageLimit= default(int),  string accessToken = null, bool throwOnError = true);
         /// <summary>
         /// Update an Item
         /// </summary>
@@ -947,6 +1112,61 @@ namespace Autodesk.DataManagement.Http
         
         public async System.Threading.Tasks.Task<ApiResponse<Refs>> GetItemRefsAsync (string projectId,string itemId,string xUserId= default(string),List<FilterTypeVersion> filterType= default(List<FilterTypeVersion>),List<string> filterId= default(List<string>),List<string> filterExtensionType= default(List<string>), string accessToken = null, bool throwOnError = true)
         {
+            return await GetItemRefsAsync(projectId, itemId, (IEnumerable<QueryFilter>)null, xUserId, filterType, filterId, filterExtensionType, accessToken, throwOnError);
+        }
+        /// <summary>
+        /// List Related Resources for an Item
+        /// </summary>
+        /// <remarks>
+        ///Returns the resources (items, folders, and versions) that have a custom relationship with the specified item. Custom relationships can be established between an item and other resources within the data domain service (folders, items, and versions).
+///
+///
+///Each relationship is defined by the ID of the object at the other end of the relationship, together with type, attributes, and relationships links.
+///Callers will typically use a filter parameter to restrict the response to the custom relationship types (`filter[meta.refType]`) they are interested in.
+///
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="projectId">
+         ///The unique identifier of a project. 
+///
+///For BIM 360 Docs and ACC Docs, a hub ID corresponds to an Account ID. To convert a BIM 360 or ACC Account ID to a hub ID, prefix the Account ID with `b.`. For example, an Account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///Similarly, to convert an ACC or BIM 360 project ID to a Data Management project ID prefix the ACC or BIM 360 project ID with `b.`. For example, a project ID of `c8b0c73d-3ae9` translates to a project ID of `b.c8b0c73d-3ae9`.
+         /// </param>
+         /// <param name="itemId">
+         ///The unique identifier of an item.
+         /// </param>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterType">
+         ///Filter by the `type` of the `ref` target. Supported values include `folders`, `items`, and `versions`. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;Refs&gt;></returns>
+        
+        public async System.Threading.Tasks.Task<ApiResponse<Refs>> GetItemRefsAsync (string projectId,string itemId, IEnumerable<QueryFilter> filters,string xUserId= default(string),List<FilterTypeVersion> filterType= default(List<FilterTypeVersion>),List<string> filterId= default(List<string>),List<string> filterExtensionType= default(List<string>), string accessToken = null, bool throwOnError = true)
+        {
             logger.LogInformation("Entered into GetItemRefsAsync ");
             using (var request = new HttpRequestMessage())
             {
@@ -954,6 +1174,7 @@ namespace Autodesk.DataManagement.Http
                 SetQueryParameter("filter[type]", filterType, queryParam);
                 SetQueryParameter("filter[id]", filterId, queryParam);
                 SetQueryParameter("filter[extension.type]", filterExtensionType, queryParam);
+                queryParam.SetFilterParameters(filters);
                 request.RequestUri =
                     Marshalling.BuildRequestUri("/data/v1/projects/{project_id}/items/{item_id}/refs",
                         routeParameters: new Dictionary<string, object> {
@@ -1159,6 +1380,66 @@ namespace Autodesk.DataManagement.Http
         
         public async System.Threading.Tasks.Task<ApiResponse<RelationshipRefs>> GetItemRelationshipsRefsAsync (string projectId,string itemId,string xUserId= default(string),List<FilterTypeVersion> filterType= default(List<FilterTypeVersion>),List<string> filterId= default(List<string>),FilterRefType? filterRefType= null,FilterDirection? filterDirection= null,List<string> filterExtensionType= default(List<string>), string accessToken = null, bool throwOnError = true)
         {
+            return await GetItemRelationshipsRefsAsync(projectId, itemId, (IEnumerable<QueryFilter>)null, xUserId, filterType, filterId, filterRefType, filterDirection, filterExtensionType, accessToken, throwOnError);
+        }
+        /// <summary>
+        /// List Custom Relationships for an Item
+        /// </summary>
+        /// <remarks>
+        ///Returns the custom relationships that are associated with the specified item. Custom relationships can be established between an item and other resources within the `data` domain service (folders, items, and versions).
+///
+///Each relationship is defined by the ID of the object at the other end of the relationship, together with type, specific reference meta including extension data.
+///Callers will typically use a filter parameter to restrict the response to the custom relationship types (`filter[meta.refType]`) they are interested in.
+///The response body will have an included array that contains the resources in the relationship, which is essentially what is returned by the [List Related Resources for an Item](/en/docs/data/v2/reference/http/projects-project_id-items-item_id-refs-GET/) operation.
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="projectId">
+         ///The unique identifier of a project. 
+///
+///For BIM 360 Docs and ACC Docs, a hub ID corresponds to an Account ID. To convert a BIM 360 or ACC Account ID to a hub ID, prefix the Account ID with `b.`. For example, an Account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///Similarly, to convert an ACC or BIM 360 project ID to a Data Management project ID prefix the ACC or BIM 360 project ID with `b.`. For example, a project ID of `c8b0c73d-3ae9` translates to a project ID of `b.c8b0c73d-3ae9`.
+         /// </param>
+         /// <param name="itemId">
+         ///The unique identifier of an item.
+         /// </param>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterType">
+         ///Filter by the `type` of the `ref` target. Supported values include `folders`, `items`, and `versions`. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterRefType">
+         ///Filter by `refType`. Possible values: `derived`, `dependencies`, `auxiliary`, `xrefs`, and `includes`. (optional)
+         /// </param>
+         /// <param name="filterDirection">
+         ///Filter by the direction of the reference. Possible values: `from` and `to`. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;RelationshipRefs&gt;></returns>
+        
+        public async System.Threading.Tasks.Task<ApiResponse<RelationshipRefs>> GetItemRelationshipsRefsAsync (string projectId,string itemId, IEnumerable<QueryFilter> filters,string xUserId= default(string),List<FilterTypeVersion> filterType= default(List<FilterTypeVersion>),List<string> filterId= default(List<string>),FilterRefType? filterRefType= null,FilterDirection? filterDirection= null,List<string> filterExtensionType= default(List<string>), string accessToken = null, bool throwOnError = true)
+        {
             logger.LogInformation("Entered into GetItemRelationshipsRefsAsync ");
             using (var request = new HttpRequestMessage())
             {
@@ -1168,6 +1449,7 @@ namespace Autodesk.DataManagement.Http
                 SetQueryParameter("filter[refType]", filterRefType, queryParam);
                 SetQueryParameter("filter[direction]", filterDirection, queryParam);
                 SetQueryParameter("filter[extension.type]", filterExtensionType, queryParam);
+                queryParam.SetFilterParameters(filters);
                 request.RequestUri =
                     Marshalling.BuildRequestUri("/data/v1/projects/{project_id}/items/{item_id}/relationships/refs",
                         routeParameters: new Dictionary<string, object> {
@@ -1367,6 +1649,62 @@ namespace Autodesk.DataManagement.Http
         
         public async System.Threading.Tasks.Task<ApiResponse<Versions>> GetItemVersionsAsync (string projectId,string itemId,string xUserId= default(string),List<string> filterId= default(List<string>),List<string> filterExtensionType= default(List<string>),List<int> filterVersionNumber= default(List<int>),int pageNumber= default(int),int pageLimit= default(int), string accessToken = null, bool throwOnError = true)
         {
+            return await GetItemVersionsAsync(projectId, itemId, (IEnumerable<QueryFilter>)null, xUserId, filterId, filterExtensionType, filterVersionNumber, pageNumber, pageLimit, accessToken, throwOnError);
+        }
+        /// <summary>
+        /// List all Versions of an Item
+        /// </summary>
+        /// <remarks>
+        ///Lists all versions of the specified item. A project can contain multiple versions of a resource item.
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="projectId">
+         ///The unique identifier of a project. 
+///
+///For BIM 360 Docs and ACC Docs, a hub ID corresponds to an Account ID. To convert a BIM 360 or ACC Account ID to a hub ID, prefix the Account ID with `b.`. For example, an Account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///Similarly, to convert an ACC or BIM 360 project ID to a Data Management project ID prefix the ACC or BIM 360 project ID with `b.`. For example, a project ID of `c8b0c73d-3ae9` translates to a project ID of `b.c8b0c73d-3ae9`.
+         /// </param>
+         /// <param name="itemId">
+         ///The unique identifier of an item.
+         /// </param>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="filterVersionNumber">
+         ///Filter by versionNumber. (optional)
+         /// </param>
+         /// <param name="pageNumber">
+         ///Specifies what page to return. Page numbers are 0-based (the first page is page 0). (optional)
+         /// </param>
+         /// <param name="pageLimit">
+         ///Specifies the maximum number of elements to return in the page. The default value is 200. The min value is 1. The max value is 200. (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;Versions&gt;></returns>
+        
+        public async System.Threading.Tasks.Task<ApiResponse<Versions>> GetItemVersionsAsync (string projectId,string itemId, IEnumerable<QueryFilter> filters,string xUserId= default(string),List<string> filterId= default(List<string>),List<string> filterExtensionType= default(List<string>),List<int> filterVersionNumber= default(List<int>),int pageNumber= default(int),int pageLimit= default(int), string accessToken = null, bool throwOnError = true)
+        {
             logger.LogInformation("Entered into GetItemVersionsAsync ");
             using (var request = new HttpRequestMessage())
             {
@@ -1376,6 +1714,7 @@ namespace Autodesk.DataManagement.Http
                 SetQueryParameter("filter[versionNumber]", filterVersionNumber, queryParam);
                 SetQueryParameter("page[number]", pageNumber, queryParam);
                 SetQueryParameter("page[limit]", pageLimit, queryParam);
+                queryParam.SetFilterParameters(filters);
                 request.RequestUri =
                     Marshalling.BuildRequestUri("/data/v1/projects/{project_id}/items/{item_id}/versions",
                         routeParameters: new Dictionary<string, object> {

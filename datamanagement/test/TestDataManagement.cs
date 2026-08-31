@@ -181,6 +181,14 @@ public class TestDataManagement
     }
 
     [TestMethod]
+    public async Task TestGetFolderContentsAsync_WithComparisonFilter()
+    {
+        var filters = new[] { QueryFilter.Contains(DataManagementFields.DisplayName, "a") };
+        FolderContents folderContents = await _DataManagement.GetFolderContentsAsync(projectId: projectId, folderId: folderId, accessToken: token, filters: filters);
+        Assert.IsNotNull(folderContents.Data);
+    }
+
+    [TestMethod]
     public async Task TestGetFolderParentAsync()
     {
         Folder folder = await _DataManagement.GetFolderParentAsync(projectId: projectId, folderId: folderId, accessToken: token);

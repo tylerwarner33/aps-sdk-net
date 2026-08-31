@@ -291,6 +291,26 @@ class DataManagement
         }
     }
 
+    public async Task GetFolderContentsWithComparisonFiltersAsync()
+    {
+        // Everything modified within a two-hour window on 15 October 2016 (GMT-0), limited to
+        // Revit or JPG files whose name contains "Floor".
+        var filters = new[]
+        {
+            QueryFilter.Ge(DataManagementFields.LastModifiedTime, "2016-10-15T08:00"),
+            QueryFilter.Le(DataManagementFields.LastModifiedTime, "2016-10-15T22:00"),
+            QueryFilter.Eq(DataManagementFields.FileType, "rvt", "jpg"),
+            QueryFilter.Contains(DataManagementFields.FileName, "Floor"),
+        };
+
+        FolderContents folderContents = await dataManagementClient.GetFolderContentsAsync(
+            projectId: project_id,
+            folderId: folder_id,
+            filters: filters);
+
+        Console.WriteLine(JsonConvert.SerializeObject(folderContents, Formatting.Indented));
+    }
+
     public async Task GetFolderParentAsync()
     {
 

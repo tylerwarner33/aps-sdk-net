@@ -11,6 +11,9 @@
 # Env Variables
 *.env
 
+# Bash crash dumps
+bash.exe.stackdump
+
 # User-specific files
 *.suo
 *.user

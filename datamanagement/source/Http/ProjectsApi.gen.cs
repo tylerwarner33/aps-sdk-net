@@ -171,6 +171,54 @@ namespace Autodesk.DataManagement.Http
         /// <returns>Task of ApiResponse&lt;Projects&gt;</returns>
         
         System.Threading.Tasks.Task<ApiResponse<Projects>> GetHubProjectsAsync (string hubId, string xUserId= default(string), List<string> filterId= default(List<string>), List<string> filterExtensionType= default(List<string>), int pageNumber= default(int), int pageLimit= default(int),  string accessToken = null, bool throwOnError = true);
+
+        /// <summary>
+        /// Get Projects
+        /// </summary>
+        /// <remarks>
+        ///Returns a collection of active projects within the specified hub. The returned projects can be Autodesk Construction Cloud (ACC), BIM 360, BIM 360 Team, Fusion Team, and A360 Personal projects. 
+///
+///For BIM 360 and ACC projects a hub ID corresponds to an Account ID. To convert an Account ID to a hub ID, prefix the account ID with `b.`. For example, a BIM 360 account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///Similarly, to convert a BIM 360 and ACC project IDs to  Data Management project IDs prefix the BIM 360 or ACC Project ID with `b.`. For example, a project ID of `c8b0c73d-3ae9` translates to a project ID of `b.c8b0c73d-3ae9`.
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="hubId">
+         ///The unique identifier of a hub.
+         /// </param>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="pageNumber">
+         ///Specifies what page to return. Page numbers are 0-based (the first page is page 0). (optional)
+         /// </param>
+         /// <param name="pageLimit">
+         ///Specifies the maximum number of elements to return in the page. The default value is 200. The min value is 1. The max value is 200. (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;Projects&gt;</returns>
+        
+        System.Threading.Tasks.Task<ApiResponse<Projects>> GetHubProjectsAsync (string hubId, IEnumerable<QueryFilter> filters, string xUserId= default(string), List<string> filterId= default(List<string>), List<string> filterExtensionType= default(List<string>), int pageNumber= default(int), int pageLimit= default(int),  string accessToken = null, bool throwOnError = true);
         /// <summary>
         /// Get a Project
         /// </summary>
@@ -775,6 +823,56 @@ namespace Autodesk.DataManagement.Http
         
         public async System.Threading.Tasks.Task<ApiResponse<Projects>> GetHubProjectsAsync (string hubId,string xUserId= default(string),List<string> filterId= default(List<string>),List<string> filterExtensionType= default(List<string>),int pageNumber= default(int),int pageLimit= default(int), string accessToken = null, bool throwOnError = true)
         {
+            return await GetHubProjectsAsync(hubId, (IEnumerable<QueryFilter>)null, xUserId, filterId, filterExtensionType, pageNumber, pageLimit, accessToken, throwOnError);
+        }
+        /// <summary>
+        /// Get Projects
+        /// </summary>
+        /// <remarks>
+        ///Returns a collection of active projects within the specified hub. The returned projects can be Autodesk Construction Cloud (ACC), BIM 360, BIM 360 Team, Fusion Team, and A360 Personal projects. 
+///
+///For BIM 360 and ACC projects a hub ID corresponds to an Account ID. To convert an Account ID to a hub ID, prefix the account ID with `b.`. For example, a BIM 360 account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///Similarly, to convert a BIM 360 and ACC project IDs to  Data Management project IDs prefix the BIM 360 or ACC Project ID with `b.`. For example, a project ID of `c8b0c73d-3ae9` translates to a project ID of `b.c8b0c73d-3ae9`.
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="hubId">
+         ///The unique identifier of a hub.
+         /// </param>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="pageNumber">
+         ///Specifies what page to return. Page numbers are 0-based (the first page is page 0). (optional)
+         /// </param>
+         /// <param name="pageLimit">
+         ///Specifies the maximum number of elements to return in the page. The default value is 200. The min value is 1. The max value is 200. (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;Projects&gt;></returns>
+        
+        public async System.Threading.Tasks.Task<ApiResponse<Projects>> GetHubProjectsAsync (string hubId, IEnumerable<QueryFilter> filters,string xUserId= default(string),List<string> filterId= default(List<string>),List<string> filterExtensionType= default(List<string>),int pageNumber= default(int),int pageLimit= default(int), string accessToken = null, bool throwOnError = true)
+        {
             logger.LogInformation("Entered into GetHubProjectsAsync ");
             using (var request = new HttpRequestMessage())
             {
@@ -783,6 +881,7 @@ namespace Autodesk.DataManagement.Http
                 SetQueryParameter("filter[extension.type]", filterExtensionType, queryParam);
                 SetQueryParameter("page[number]", pageNumber, queryParam);
                 SetQueryParameter("page[limit]", pageLimit, queryParam);
+                queryParam.SetFilterParameters(filters);
                 request.RequestUri =
                     Marshalling.BuildRequestUri("/project/v1/hubs/{hub_id}/projects",
                         routeParameters: new Dictionary<string, object> {

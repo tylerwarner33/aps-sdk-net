@@ -89,6 +89,48 @@ namespace Autodesk.DataManagement.Http
         /// <returns>Task of ApiResponse&lt;Hubs&gt;</returns>
         
         System.Threading.Tasks.Task<ApiResponse<Hubs>> GetHubsAsync (string xUserId= default(string), List<string> filterId= default(List<string>), List<string> filterName= default(List<string>), List<string> filterExtensionType= default(List<string>),  string accessToken = null, bool throwOnError = true);
+
+        /// <summary>
+        /// List Hubs
+        /// </summary>
+        /// <remarks>
+        ///Returns a collection of hubs that the user of your app can access.
+///
+///The returned hubs can be BIM 360 Team hubs, Fusion Team hubs (formerly known as A360 Team hubs), A360 Personal hubs, ACC Docs (Autodesk Docs) accounts, or BIM 360 Docs accounts. Only active hubs are returned.
+///
+///For BIM 360 Docs and ACC Docs, a hub ID corresponds to an Account ID. To convert a BIM 360 or ACC Account ID to a hub ID, prefix the Account ID with `b.`. For example, an Account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterName">
+         ///Filter by the `name` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;Hubs&gt;</returns>
+        
+        System.Threading.Tasks.Task<ApiResponse<Hubs>> GetHubsAsync (IEnumerable<QueryFilter> filters,string xUserId= default(string), List<string> filterId= default(List<string>), List<string> filterName= default(List<string>), List<string> filterExtensionType= default(List<string>),  string accessToken = null, bool throwOnError = true);
     }
 
     /// <summary>
@@ -308,6 +350,50 @@ namespace Autodesk.DataManagement.Http
         
         public async System.Threading.Tasks.Task<ApiResponse<Hubs>> GetHubsAsync (string xUserId= default(string),List<string> filterId= default(List<string>),List<string> filterName= default(List<string>),List<string> filterExtensionType= default(List<string>), string accessToken = null, bool throwOnError = true)
         {
+            return await GetHubsAsync((IEnumerable<QueryFilter>)null, xUserId, filterId, filterName, filterExtensionType, accessToken, throwOnError);
+        }
+        /// <summary>
+        /// List Hubs
+        /// </summary>
+        /// <remarks>
+        ///Returns a collection of hubs that the user of your app can access.
+///
+///The returned hubs can be BIM 360 Team hubs, Fusion Team hubs (formerly known as A360 Team hubs), A360 Personal hubs, ACC Docs (Autodesk Docs) accounts, or BIM 360 Docs accounts. Only active hubs are returned.
+///
+///For BIM 360 Docs and ACC Docs, a hub ID corresponds to an Account ID. To convert a BIM 360 or ACC Account ID to a hub ID, prefix the Account ID with `b.`. For example, an Account ID of ``c8b0c73d-3ae9`` translates to a hub ID of `b.c8b0c73d-3ae9`.
+///
+///**Note:** This operation supports Autodesk Construction Cloud (ACC) Projects. For more information, see the [ACC Platform API documentation](https://en.docs.acc.v1/overview/introduction/). 
+        /// </remarks>
+        /// <exception cref="HttpRequestException">Thrown when fails to make API call</exception>
+         /// <param name="filters">
+///Additional filter clauses supporting the full set of comparison operators
+///(`-lt`, `-le`, `-eq`, `-ge`, `-gt`, `-starts`, `-ends`, `-contains`) and arbitrary field
+///names, including abbreviated forms. Combined with any legacy `filter*` parameters; supplying
+///the same field through both mechanisms throws. See the
+///[Filtering](/en/docs/data/v2/developers_guide/filtering/) guide.
+         /// </param>
+         /// <param name="xUserId">
+         ///In a two-legged authentication context, an app has access to all users specified by the administrator in the SaaS integrations UI. By providing this header, the API call will be limited to act only on behalf of the specified user. (optional)
+         /// </param>
+         /// <param name="filterId">
+         ///Filter by the `id` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterName">
+         ///Filter by the `name` of the `ref` target. (optional)
+         /// </param>
+         /// <param name="filterExtensionType">
+         ///Filter by the extension type.  (optional)
+         /// </param>
+         /// <param name="accessToken">
+///An access token obtained by a call to GetThreeLeggedTokenAsync() or GetTwoLeggedTokenAsync(). (optional)
+         /// </param>
+         /// <param name="throwOnError">
+///Indicates whether to throw an exception on error.(optional)
+         /// </param>
+        /// <returns>Task of ApiResponse&lt;Hubs&gt;></returns>
+        
+        public async System.Threading.Tasks.Task<ApiResponse<Hubs>> GetHubsAsync (IEnumerable<QueryFilter> filters,string xUserId= default(string),List<string> filterId= default(List<string>),List<string> filterName= default(List<string>),List<string> filterExtensionType= default(List<string>), string accessToken = null, bool throwOnError = true)
+        {
             logger.LogInformation("Entered into GetHubsAsync ");
             using (var request = new HttpRequestMessage())
             {
@@ -315,6 +401,7 @@ namespace Autodesk.DataManagement.Http
                 SetQueryParameter("filter[id]", filterId, queryParam);
                 SetQueryParameter("filter[name]", filterName, queryParam);
                 SetQueryParameter("filter[extension.type]", filterExtensionType, queryParam);
+                queryParam.SetFilterParameters(filters);
                 request.RequestUri =
                     Marshalling.BuildRequestUri("/project/v1/hubs",
                         routeParameters: new Dictionary<string, object> {
