@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\source\Autodesk.Authentication.csproj"/>
+    <ProjectReference Include="..\..\test\Autodesk.Aps.TestCommon\Autodesk.Aps.TestCommon.csproj"/>
   </ItemGroup>
 
 </Project>
