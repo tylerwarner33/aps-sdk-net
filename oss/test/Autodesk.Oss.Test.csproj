@@ -15,6 +15,10 @@
   </ItemGroup>
     <ItemGroup>
     <ProjectReference Include="..\source\Autodesk.Oss.csproj"/>
+    <ProjectReference Include="..\..\test\Autodesk.Aps.TestCommon\Autodesk.Aps.TestCommon.csproj"/>
+  </ItemGroup>
+    <ItemGroup>
+    <None Update="fixtures\sample.txt" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
 </Project>

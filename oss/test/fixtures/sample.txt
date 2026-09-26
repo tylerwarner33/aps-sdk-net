@@ -1,0 +1,8 @@
+Autodesk Platform Services .NET SDK test fixture.
+
+This file is the upload source for the OSS object tests. It is deliberately small
+and human readable. The chunked upload test needs a file larger than 5 MB, and it
+generates that file at run time rather than committing a binary here.
+
+Do not put anything sensitive in this file. It is uploaded to a public bucket key
+namespace during every live test run.
