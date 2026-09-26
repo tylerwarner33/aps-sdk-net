@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Autodesk.ModelDerivativeApi.Test</RootNamespace>
+    <RootNamespace>Autodesk.ModelDerivative.Test</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -13,5 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\source\Autodesk.ModelDerivative.csproj"/>
+    <ProjectReference Include="..\..\test\Autodesk.Aps.TestCommon\Autodesk.Aps.TestCommon.csproj"/>
   </ItemGroup>
 </Project>
