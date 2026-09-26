@@ -16,6 +16,7 @@
 	
 	<ItemGroup>
 		<ProjectReference Include="..\source\Autodesk.Construction.AccountAdmin.csproj"/>
+		<ProjectReference Include="..\..\..\test\Autodesk.Aps.TestCommon\Autodesk.Aps.TestCommon.csproj"/>
 	</ItemGroup>
 	
 </Project>
