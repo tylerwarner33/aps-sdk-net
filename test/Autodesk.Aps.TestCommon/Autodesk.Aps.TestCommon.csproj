@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Autodesk.Aps.TestCommon</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!--
+    No APS package or project reference is declared here on purpose.
+    The Authentication and SecureServiceAccount test projects reference their own
+    source projects, so referencing the published package here would put two copies
+    of the same type in one test assembly. The token helper therefore talks to the
+    APS token endpoint with a plain HttpClient.
+  -->
+  <ItemGroup>
+    <PackageReference Include="DotNetEnv" />
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+  </ItemGroup>
+
+</Project>
