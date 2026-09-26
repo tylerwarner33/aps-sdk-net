@@ -15,5 +15,6 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\source\Autodesk.Construction.Issues.csproj"/>
+      <ProjectReference Include="..\..\..\test\Autodesk.Aps.TestCommon\Autodesk.Aps.TestCommon.csproj"/>
     </ItemGroup>
 </Project>
