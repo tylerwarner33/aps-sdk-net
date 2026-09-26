@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\source\Autodesk.DataManagement.csproj"/>
+    <ProjectReference Include="..\..\test\Autodesk.Aps.TestCommon\Autodesk.Aps.TestCommon.csproj"/>
   </ItemGroup>
 
 </Project>
