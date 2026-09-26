@@ -19,32 +19,32 @@ namespace Autodesk.DataManagement.Model;
 /// </remarks>
 public enum ComparisonType
 {
-	/// <summary>Implicit equality - emits no suffix (<c>filter[field]=value</c>).</summary>
-	Equal = 0,
+    /// <summary>Implicit equality - emits no suffix (<c>filter[field]=value</c>).</summary>
+    Equal = 0,
 
-	/// <summary>Explicit equality - <c>-eq</c>.</summary>
-	EqualTo,
+    /// <summary>Explicit equality - <c>-eq</c>.</summary>
+    EqualTo,
 
-	/// <summary>Less than - <c>-lt</c>.</summary>
-	LessThan,
+    /// <summary>Less than - <c>-lt</c>.</summary>
+    LessThan,
 
-	/// <summary>Less than or equal to - <c>-le</c>.</summary>
-	LessThanOrEqual,
+    /// <summary>Less than or equal to - <c>-le</c>.</summary>
+    LessThanOrEqual,
 
-	/// <summary>Greater than or equal to - <c>-ge</c>.</summary>
-	GreaterThanOrEqual,
+    /// <summary>Greater than or equal to - <c>-ge</c>.</summary>
+    GreaterThanOrEqual,
 
-	/// <summary>Greater than - <c>-gt</c>.</summary>
-	GreaterThan,
+    /// <summary>Greater than - <c>-gt</c>.</summary>
+    GreaterThan,
 
-	/// <summary>String starts with - <c>-starts</c>.</summary>
-	StartsWith,
+    /// <summary>String starts with - <c>-starts</c>.</summary>
+    StartsWith,
 
-	/// <summary>String ends with - <c>-ends</c>.</summary>
-	EndsWith,
+    /// <summary>String ends with - <c>-ends</c>.</summary>
+    EndsWith,
 
-	/// <summary>String contains - <c>-contains</c>.</summary>
-	Contains
+    /// <summary>String contains - <c>-contains</c>.</summary>
+    Contains
 }
 
 /// <summary>
@@ -52,32 +52,32 @@ public enum ComparisonType
 /// </summary>
 public static class ComparisonTypeExtensions
 {
-	/// <summary>
-	/// 	Returns the suffix appended to the <c>filter[field]</c> query key, or an empty string for
-	/// 	<see cref="ComparisonType.Equal"/>.
-	/// </summary>
-	/// <param name="comparison">
-	/// 	Comparison operator to resolve.
-	/// </param>
-	/// <returns>
-	/// 	The operator suffix, ex. <c>-ge</c>, or an empty string for <see cref="ComparisonType.Equal"/>.
-	/// </returns>
-	public static string ToOperatorSuffix(this ComparisonType comparison)
-	{
-		switch (comparison)
-		{
-			case ComparisonType.Equal: return string.Empty;
-			case ComparisonType.EqualTo: return "-eq";
-			case ComparisonType.LessThan: return "-lt";
-			case ComparisonType.LessThanOrEqual: return "-le";
-			case ComparisonType.GreaterThanOrEqual: return "-ge";
-			case ComparisonType.GreaterThan: return "-gt";
-			case ComparisonType.StartsWith: return "-starts";
-			case ComparisonType.EndsWith: return "-ends";
-			case ComparisonType.Contains: return "-contains";
-			default:
-				throw new ArgumentOutOfRangeException(
-					nameof(comparison), comparison, "Unsupported comparison type.");
-		}
-	}
+    /// <summary>
+    /// 	Returns the suffix appended to the <c>filter[field]</c> query key, or an empty string for
+    /// 	<see cref="ComparisonType.Equal"/>.
+    /// </summary>
+    /// <param name="comparison">
+    /// 	Comparison operator to resolve.
+    /// </param>
+    /// <returns>
+    /// 	The operator suffix, ex. <c>-ge</c>, or an empty string for <see cref="ComparisonType.Equal"/>.
+    /// </returns>
+    public static string ToOperatorSuffix(this ComparisonType comparison)
+    {
+        switch (comparison)
+        {
+            case ComparisonType.Equal: return string.Empty;
+            case ComparisonType.EqualTo: return "-eq";
+            case ComparisonType.LessThan: return "-lt";
+            case ComparisonType.LessThanOrEqual: return "-le";
+            case ComparisonType.GreaterThanOrEqual: return "-ge";
+            case ComparisonType.GreaterThan: return "-gt";
+            case ComparisonType.StartsWith: return "-starts";
+            case ComparisonType.EndsWith: return "-ends";
+            case ComparisonType.Contains: return "-contains";
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(comparison), comparison, "Unsupported comparison type.");
+        }
+    }
 }
