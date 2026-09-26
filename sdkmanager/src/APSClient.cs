@@ -38,6 +38,26 @@ namespace Autodesk.SDKManager
             _logger.LogInformation($"Initializing resiliency config: {_resiliencyConfig.ToString()}");
         }
 
+        /// <summary>
+        /// 	Builds a client over a prebuilt <see cref="ForgeService"/>.
+        /// </summary>
+        /// <remarks>
+        /// 	<c>ForgeService</c> has a public constructor that takes an <c>HttpClient</c>, so a test can
+        /// 	build one over its own <c>HttpMessageHandler</c> and pass the result here.
+        /// 	No dependency injection container is needed.
+        /// </remarks>
+        /// <param name="service">
+        /// 	The transport service to use.
+        /// </param>
+        /// <exception cref="System.ArgumentNullException">
+        /// 	Thrown when <paramref name="service"/> is null.
+        /// </exception>
+        public ApsClient(ForgeService service)
+        {
+            _service = service ?? throw new System.ArgumentNullException(nameof(service));
+            _resiliencyConfig = ResiliencyConfiguration.CreateDefault();
+        }
+
         public ForgeService Service { get => _service;}
 
         public void Add(IResiliencyConfiguration resiliencyConfiguration)

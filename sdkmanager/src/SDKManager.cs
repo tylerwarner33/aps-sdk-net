@@ -27,12 +27,44 @@ namespace Autodesk.SDKManager
     public class SDKManager : ISDKManager
     {
         public SDKManager(IApsConfiguration apsConfiguration, IResiliencyConfiguration resiliencyConfiguration, IAuthClient authClient, ILogger logger )
+            : this(apsConfiguration, resiliencyConfiguration, authClient, logger, null)
+        {
+        }
+
+        /// <summary>
+        /// 	Builds an SDK Manager over a caller-supplied <see cref="IApsClient"/>.
+        /// </summary>
+        /// <remarks>
+        /// 	Pass <c>null</c> for <paramref name="apsClient"/> to get the default client.
+        /// 	Supplying one is the seam a test uses to intercept HTTP traffic.
+        /// 	The constructor sets <c>BaseAddress</c> on the supplied client's <c>HttpClient</c>, so supply a
+        /// 	client that has not sent a request yet, and do not share one client between two managers.
+        /// 	A supplied client keeps its own resiliency behavior, so
+        /// 	<paramref name="resiliencyConfiguration"/> does not apply to it.
+        /// </remarks>
+        /// <param name="apsConfiguration">
+        /// 	Region and base address configuration.
+        /// </param>
+        /// <param name="resiliencyConfiguration">
+        /// 	Retry and circuit breaker configuration for the default client.
+        /// 	Ignored when <paramref name="apsClient"/> is supplied.
+        /// </param>
+        /// <param name="authClient">
+        /// 	The authentication client. There is no default.
+        /// </param>
+        /// <param name="logger">
+        /// 	The logger. Defaults to <see cref="NullLogger"/>.
+        /// </param>
+        /// <param name="apsClient">
+        /// 	The transport client, or <c>null</c> to build the default one.
+        /// </param>
+        public SDKManager(IApsConfiguration apsConfiguration, IResiliencyConfiguration resiliencyConfiguration, IAuthClient authClient, ILogger logger, IApsClient apsClient)
         {
            // Default option is important for simplest case.
            _apsConfiguration =  apsConfiguration ?? new ApsConfiguration();
-           var currentResiliencyConfiguration = resiliencyConfiguration ?? ResiliencyConfiguration.CreateDefault();
+           IResiliencyConfiguration currentResiliencyConfiguration = resiliencyConfiguration ?? ResiliencyConfiguration.CreateDefault();
 
-           _aPSClient = new ApsClient(currentResiliencyConfiguration);
+           _aPSClient = apsClient ?? new ApsClient(currentResiliencyConfiguration);
            _aPSClient.Service.Client.BaseAddress = _apsConfiguration.BaseAddress;
 
            _authClient = authClient; // There is no default auth client so far.

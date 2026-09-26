@@ -49,13 +49,34 @@ namespace Autodesk.SDKManager
             _apsConfiguration = apsConfiguration;
             return this;
         }
+        /// <summary>
+        /// 	Supplies a prebuilt <see cref="IApsClient"/> instead of letting the SDK build its own.
+        /// </summary>
+        /// <remarks>
+        /// 	This is the test seam.
+        /// 	It lets a caller supply a <c>ForgeService</c> built over a custom <c>HttpMessageHandler</c>,
+        /// 	which is what record and replay testing needs.
+        /// 	A supplied client ignores the resiliency configuration.
+        /// </remarks>
+        /// <param name="apsClient">
+        /// 	The client to use. Leave it unset to keep the default behavior.
+        /// </param>
+        /// <returns>
+        /// 	The same builder, so calls chain.
+        /// </returns>
+        public SdkManagerBuilder Add(IApsClient apsClient)
+        {
+            _apsClient = apsClient;
+            return this;
+        }
         public SDKManager Build()
         {
-            return new SDKManager(_apsConfiguration, _resiliencyConfiguration, _authClient, _logger);
+            return new SDKManager(_apsConfiguration, _resiliencyConfiguration, _authClient, _logger, _apsClient);
         }
         private IResiliencyConfiguration _resiliencyConfiguration;
         private ILogger _logger;
         private IAuthClient _authClient;
         private IApsConfiguration _apsConfiguration;
+        private IApsClient _apsClient;
     }
 }
