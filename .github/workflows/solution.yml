@@ -1,0 +1,46 @@
+# Compile guard for repository wide changes. Runs no tests.
+name: Solution
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - Aps.Sdk.sln
+      - Directory.Build.props
+      - Directory.Packages.props
+      - nuget.config
+      - .github/**
+  pull_request:
+    branches: [ main ]
+    paths:
+      - Aps.Sdk.sln
+      - Directory.Build.props
+      - Directory.Packages.props
+      - nuget.config
+      - .github/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solution-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/dotnet-setup
+
+      - name: Restore
+        run: dotnet restore Aps.Sdk.sln
+
+      - name: Build
+        run: dotnet build Aps.Sdk.sln -c Release --no-restore

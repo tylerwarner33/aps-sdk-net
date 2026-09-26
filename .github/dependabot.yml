@@ -1,0 +1,18 @@
+# Every action is pinned to a full commit SHA, because a tag can be moved and a commit cannot.
+# A pin does not update itself, so Dependabot proposes the update, SHA and version comment together.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/dotnet-setup
+    schedule:
+      interval: weekly
+    # A new release waits a week before Dependabot proposes it.
+    # A compromised release is usually found and pulled inside that window.
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"

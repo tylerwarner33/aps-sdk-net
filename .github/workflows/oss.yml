@@ -1,0 +1,110 @@
+name: OSS
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - oss/**
+      - test/Autodesk.Aps.TestCommon/**
+      - Directory.Build.props
+      - Directory.Packages.props
+      - nuget.config
+      - tests.runsettings
+      - .github/actions/dotnet-setup/**
+      - .github/workflows/oss.yml
+  pull_request:
+    branches: [ main ]
+    paths:
+      - oss/**
+      - test/Autodesk.Aps.TestCommon/**
+      - Directory.Build.props
+      - Directory.Packages.props
+      - nuget.config
+      - tests.runsettings
+      - .github/actions/dotnet-setup/**
+      - .github/workflows/oss.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read # actions/checkout reads the repository
+      checks: write # dorny/test-reporter publishes the test report as a check run
+    # A fork pull request cannot read the environment secrets. It builds and runs no tests.
+    # Written "not a pull request, OR a same-repository pull request".
+    # The other order yields '' on push, because github.event.pull_request is null there,
+    # which would silently strip the secrets from a push to main.
+    environment: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'aps-integration-tests' || '' }}
+    # A live run is repository wide, NOT per ref. Two pull requests are two refs, so a
+    # ref-scoped group lets both run at once and collide on the same cloud resources.
+    # GitHub keeps only the newest pending run in a group and cancels an older pending run.
+    # So a burst of pushes runs the first and the last, not every one.
+    # A fork pull request runs no live tests, so it gets its own group and never waits.
+    concurrency:
+      group: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'oss-live' || format('oss-build-{0}', github.ref) }}
+      cancel-in-progress: false
+    env:
+      RUN_LIVE_TESTS: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/dotnet-setup
+
+      - name: Restore
+        run: dotnet restore oss/test/Autodesk.Oss.Test.csproj
+
+      - name: Build
+        run: dotnet build oss/test/Autodesk.Oss.Test.csproj -c Release --no-restore
+
+      - name: Test
+        id: test
+        if: env.RUN_LIVE_TESTS == 'true'
+        run: >
+          dotnet test oss/test/Autodesk.Oss.Test.csproj
+          -c Release --no-build
+          --settings tests.runsettings
+          --logger "trx;LogFileName=oss.trx"
+          --results-directory TestResults
+          --collect:"XPlat Code Coverage"
+        env:
+          APS_CLIENT_ID: ${{ secrets.APS_CLIENT_ID }}
+          APS_CLIENT_SECRET: ${{ secrets.APS_CLIENT_SECRET }}
+          APS_REGION: ${{ vars.APS_REGION }}
+          OSS_BUCKET_PREFIX: ${{ vars.OSS_BUCKET_PREFIX }}
+          APS_TEST_BUCKET_SALT: ${{ vars.APS_TEST_BUCKET_SALT }}
+
+      - name: Publish test report
+        if: ${{ !cancelled() && (steps.test.outcome == 'success' || steps.test.outcome == 'failure') }}
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+        with:
+          name: OSS tests
+          path: TestResults/*.trx
+          reporter: dotnet-trx
+
+      - name: Coverage report
+        if: ${{ !cancelled() && (steps.test.outcome == 'success' || steps.test.outcome == 'failure') }}
+        uses: danielpalme/ReportGenerator-GitHub-Action@d3ebf1f760f7d8ab92cc44d9bcfee7ad73722a31 # 5.5.11
+        with:
+          reports: TestResults/**/coverage.cobertura.xml
+          targetdir: CoverageReport
+          reporttypes: MarkdownSummaryGithub
+
+      - name: Add coverage to job summary
+        if: ${{ !cancelled() && (steps.test.outcome == 'success' || steps.test.outcome == 'failure') }}
+        run: cat CoverageReport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results
+        if: ${{ !cancelled() && (steps.test.outcome == 'success' || steps.test.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: oss-test-results
+          path: TestResults
+          retention-days: 14

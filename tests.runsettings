@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file exists for one reason: 641 of the 699 non-test source files are
+  generated *.gen.cs. Coverage collected without an exclusion measures generated
+  code and is meaningless. The generated files carry no [GeneratedCode] attribute,
+  so ExcludeByFile is the only lever available.
+
+  It holds no secrets, no TestRunParameters, and no machine-specific paths.
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <ExcludeByFile>**/*.gen.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

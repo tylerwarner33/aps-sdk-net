@@ -1,0 +1,53 @@
+name: SDK Manager
+
+# Compile guard for the SDK Manager source.
+# The service packages reference the PUBLISHED Autodesk.SDKManager package through
+# Directory.Packages.props, not this project, so a change here cannot break them until a
+# new version is published and pinned. That is why no package workflow depends on this one.
+# There is no test step. SDK Manager has no test project.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - sdkmanager/**
+      - Directory.Build.props
+      - Directory.Packages.props
+      - nuget.config
+      - .github/actions/dotnet-setup/**
+      - .github/workflows/sdkmanager.yml
+  pull_request:
+    branches: [ main ]
+    paths:
+      - sdkmanager/**
+      - Directory.Build.props
+      - Directory.Packages.props
+      - nuget.config
+      - .github/actions/dotnet-setup/**
+      - .github/workflows/sdkmanager.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdkmanager-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/dotnet-setup
+
+      - name: Restore
+        run: dotnet restore sdkmanager/Autodesk.Sdk.Manager.csproj
+
+      - name: Build
+        run: dotnet build sdkmanager/Autodesk.Sdk.Manager.csproj -c Release --no-restore
